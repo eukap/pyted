@@ -13,7 +13,7 @@ class MenuBarFrame(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.config(height=20)
-        self.pack(fill=BOTH)
+        self.pack(fill=X)
 
 
 class FileMenuButton(Menubutton):
@@ -24,14 +24,20 @@ class FileMenuButton(Menubutton):
         self.menu = Menu(self)
         self['menu'] = self.menu
         self.menu.add_command(command=self.openfile, label='Open')
-        self.menu.add_command(command=asksaveasfilename, label='Save as')
+        self.menu.add_command(command=self.saveasfile, label='Save as')
         self.menu.add_command(command=exit, label='Exit')
 
     @staticmethod
     def openfile():
-        filename = askopenfilename()
-        file = open(filename, 'r')
+        file = askopenfile()
         Application.text_area.insert(1.0, file.read())
+        file.close()
+
+    @staticmethod
+    def saveasfile():
+        file = asksaveasfile()
+        text = Application.text_area.get(1.0, END)
+        file.write(text)
         file.close()
 
 
@@ -59,15 +65,17 @@ class HelpMenuButton(Menubutton):
 class ToolbarFrame(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.config(bg='#444444', height=30)
-        self.pack(fill=BOTH)
+        self.config(bg='#444444', height=30, borderwidth=1, relief=RIDGE)
+        self.pack(fill=X)
 
 
 class QuitButton(Button):
     def __init__(self, master=None):
         Button.__init__(self, master)
-        self.config(text='Quit', fg='#eeeeee', bg='#333333', command='exit')
-        self.pack(side=RIGHT)
+        self.config(width=2, text='Quit', font=('Sans', '10'), fg='#eeeeee',
+                    bg='#444444', command='exit', borderwidth=1,
+                    relief=GROOVE)
+        self.pack(side=RIGHT, padx=1)
 
 
 class TextArea(Text):
