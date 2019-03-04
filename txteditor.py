@@ -6,76 +6,79 @@ class MainWindow(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.title('PyTed')
-        self.geometry('600x500+650+280')
+        self.geometry('650x500+650+280')
 
 
 class MenuBarFrame(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.config(height=20)
+        self.config()
         self.pack(fill=X)
 
 
 class FileMenuButton(Menubutton):
     def __init__(self, master=None):
         Menubutton.__init__(self, master)
-        self.config(text='File')
+        self.config(text='File', activebackground='#647899')
         self.pack(side=LEFT)
-        self.menu = Menu(self)
+        self.menu = Menu(self, tearoff=False)
         self['menu'] = self.menu
-        self.menu.add_command(command=self.openfile, label='Open')
-        self.menu.add_command(command=self.saveasfile, label='Save as')
-        self.menu.add_command(command=exit, label='Exit')
+        self.menu.config(activebackground='#647899')
+        self.menu.add_command(label='Open', command=self.openfile)
+        self.menu.add_command(label='Save as', command=self.saveasfile)
+        self.menu.add_command(label='Exit', command=exit)
 
     @staticmethod
     def openfile():
         file = askopenfile()
-        Application.text_area.insert(1.0, file.read())
-        file.close()
+        if file:
+            Application.text_area.insert(1.0, file.read())
+            file.close()
 
     @staticmethod
     def saveasfile():
         file = asksaveasfile()
-        text = Application.text_area.get(1.0, END)
-        file.write(text)
-        file.close()
+        if file:
+            text = Application.text_area.get(1.0, END)
+            file.write(text)
+            file.close()
 
 
-class EditMenuButton(Menubutton):
+class EditMenuButton(FileMenuButton):
     def __init__(self, master=None):
-        Menubutton.__init__(self, master)
+        FileMenuButton.__init__(self, master)
         self.config(text='Edit')
-        self.pack(side=LEFT)
+        # self.pack(side=LEFT)
 
 
-class ViewMenuButton(Menubutton):
+class ViewMenuButton(FileMenuButton):
     def __init__(self, master=None):
-        Menubutton.__init__(self, master)
+        FileMenuButton.__init__(self, master)
         self.config(text='View')
-        self.pack(side=LEFT)
+        # self.pack(side=LEFT)
 
 
-class HelpMenuButton(Menubutton):
+class HelpMenuButton(FileMenuButton):
     def __init__(self, master=None):
-        Menubutton.__init__(self, master)
+        FileMenuButton.__init__(self, master)
         self.config(text='Help')
-        self.pack(side=LEFT)
+        # self.pack(side=LEFT)
 
 
 class ToolbarFrame(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.config(bg='#444444', height=30, borderwidth=1, relief=RIDGE)
+        self.config(bg='#444444', pady=3, bd=1, relief=GROOVE)
         self.pack(fill=X)
 
 
 class QuitButton(Button):
     def __init__(self, master=None):
         Button.__init__(self, master)
-        self.config(width=2, text='Quit', font=('Sans', '10'), fg='#eeeeee',
-                    bg='#444444', command='exit', borderwidth=1,
-                    relief=GROOVE)
-        self.pack(side=RIGHT, padx=1)
+        self.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
+                    bg='#444444', activebackground='#647899', command='exit',
+                    bd=1, relief=GROOVE, padx=4, pady=2)
+        self.pack(side=RIGHT)
 
 
 class TextArea(Text):
@@ -85,7 +88,8 @@ class TextArea(Text):
         self.pack(expand=YES, fill=BOTH)
         self.focus()
         self.scroll_y = Scrollbar(self, orient=VERTICAL)
-        self.scroll_y.config(cursor='arrow', command=self.yview)
+        self.scroll_y.config(cursor='arrow', command=self.yview, bg='#5d5d5d',
+                             activebackground='#6e6e6e')
         self['yscrollcommand'] = self.scroll_y.set
         self.scroll_y.pack(side=RIGHT, fill=Y)
 
