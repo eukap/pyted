@@ -24,8 +24,12 @@ class FileMenuButton(Menubutton):
         self.menu = Menu(self, tearoff=False)
         self['menu'] = self.menu
         self.menu.config(activebackground='#647899')
+        self.menu.add_command(label='New')
         self.menu.add_command(label='Open', command=self.openfile)
-        self.menu.add_command(label='Save as', command=self.saveasfile)
+        self.menu.add_separator()
+        self.menu.add_command(label='Save')
+        self.menu.add_command(label='Save As', command=self.saveasfile)
+        self.menu.add_separator()
         self.menu.add_command(label='Exit', command=exit)
 
     @staticmethod
@@ -48,21 +52,30 @@ class EditMenuButton(FileMenuButton):
     def __init__(self, master=None):
         FileMenuButton.__init__(self, master)
         self.config(text='Edit')
-        # self.pack(side=LEFT)
+        self.menu.delete(0, self.menu.index(END))
+        self.menu.add_command(label='Undo')
+        self.menu.add_command(label='Redo')
+        self.menu.add_separator()
+        self.menu.add_command(label='Cut')
+        self.menu.add_command(label='Copy')
+        self.menu.add_command(label='Paste')
+        self.menu.add_command(label='Delete')
+        self.menu.add_separator()
+        self.menu.add_command(label="Select All")
 
 
 class ViewMenuButton(FileMenuButton):
     def __init__(self, master=None):
         FileMenuButton.__init__(self, master)
         self.config(text='View')
-        # self.pack(side=LEFT)
+        self.menu.delete(0, self.menu.index(END))
 
 
 class HelpMenuButton(FileMenuButton):
     def __init__(self, master=None):
         FileMenuButton.__init__(self, master)
         self.config(text='Help')
-        # self.pack(side=LEFT)
+        self.menu.delete(0, self.menu.index(END))
 
 
 class ToolbarFrame(Frame):
