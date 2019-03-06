@@ -12,18 +12,19 @@ class MainWindow(Tk):
 class MenuBarFrame(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.config()
+        self.config(bg='#444444')
         self.pack(fill=X)
 
 
 class FileMenuButton(Menubutton):
     def __init__(self, master=None):
         Menubutton.__init__(self, master)
-        self.config(text='File', activebackground='#647899')
+        self.config(text='File', activebackground='#647899', bg='#444444',
+                    underline=0)
         self.pack(side=LEFT)
-        self.menu = Menu(self, tearoff=False)
+        self.menu = Menu(self, tearoff=0)
         self['menu'] = self.menu
-        self.menu.config(activebackground='#647899')
+        self.menu.config(activebackground='#647899', bg='#444444')
         self.menu.add_command(label='New')
         self.menu.add_command(label='Open', command=self.openfile)
         self.menu.add_separator()
@@ -97,27 +98,27 @@ class QuitButton(Button):
 class TextArea(Text):
     def __init__(self, master=None):
         Text.__init__(self, master)
-        self.config(fg='#111111', bg='#eeeeee')
-        self.pack(expand=YES, fill=BOTH)
+        master.yscroll = Scrollbar(master, orient=VERTICAL)
+        master.yscroll.config(cursor='arrow', command=self.yview,
+                              bg='#5d5d5d', activebackground='#6e6e6e')
+        self['yscrollcommand'] = master.yscroll.set
+        master.yscroll.pack(side=RIGHT, fill=Y)
+        self.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD)
+        self.pack(side=LEFT, expand=YES, fill=BOTH)
         self.focus()
-        self.scroll_y = Scrollbar(self, orient=VERTICAL)
-        self.scroll_y.config(cursor='arrow', command=self.yview, bg='#5d5d5d',
-                             activebackground='#6e6e6e')
-        self['yscrollcommand'] = self.scroll_y.set
-        self.scroll_y.pack(side=RIGHT, fill=Y)
 
 
 class Application:
     mainloop = mainloop
     window = MainWindow()
     menu_bar_frm = MenuBarFrame(window)
+    toolbar_frm = ToolbarFrame(window)
+    text_area = TextArea(window)
     file_menu_btn = FileMenuButton(menu_bar_frm)
     edit_menu_btn = EditMenuButton(menu_bar_frm)
     view_menu_btn = ViewMenuButton(menu_bar_frm)
     help_menu_btn = HelpMenuButton(menu_bar_frm)
-    toolbar_frm = ToolbarFrame(window)
     quit_btn = QuitButton(toolbar_frm)
-    text_area = TextArea(window)
 
 
 if __name__ == '__main__':
