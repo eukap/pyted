@@ -16,6 +16,26 @@ class MenuBarFrame(Frame):
         self.pack(fill=X)
 
 
+class ToolbarFrame(Frame):
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.config(bg='#444444', pady=3, bd=1, relief=GROOVE)
+        self.pack(fill=X)
+
+
+class TextArea(Text):
+    def __init__(self, master=None):
+        Text.__init__(self, master)
+        master.yscroll = Scrollbar(master, orient=VERTICAL)
+        master.yscroll.config(cursor='arrow', command=self.yview,
+                              bg='#5d5d5d', activebackground='#6e6e6e')
+        self['yscrollcommand'] = master.yscroll.set
+        master.yscroll.pack(side=RIGHT, fill=Y)
+        self.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD)
+        self.pack(side=LEFT, expand=YES, fill=BOTH)
+        self.focus()
+
+
 class FileMenuButton(Menubutton):
     def __init__(self, master=None):
         Menubutton.__init__(self, master)
@@ -27,6 +47,7 @@ class FileMenuButton(Menubutton):
         self.menu.config(activebackground='#647899', bg='#444444')
         self.menu.add_command(label='New')
         self.menu.add_command(label='Open', command=self.openfile)
+        self.menu.add_command(label='Close')
         self.menu.add_separator()
         self.menu.add_command(label='Save')
         self.menu.add_command(label='Save As', command=self.saveasfile)
@@ -37,6 +58,7 @@ class FileMenuButton(Menubutton):
     def openfile():
         file = askopenfile()
         if file:
+            Application.text_area.delete(1.0, END)
             Application.text_area.insert(1.0, file.read())
             file.close()
 
@@ -62,7 +84,11 @@ class EditMenuButton(FileMenuButton):
         self.menu.add_command(label='Paste')
         self.menu.add_command(label='Delete')
         self.menu.add_separator()
-        self.menu.add_command(label="Select All")
+        self.menu.add_command(label="Select All", command=self.selectall)
+
+    @staticmethod
+    def selectall():
+        Application.text_area.tag_add(SEL, 1.0, END)
 
 
 class ViewMenuButton(FileMenuButton):
@@ -79,13 +105,6 @@ class HelpMenuButton(FileMenuButton):
         self.menu.delete(0, self.menu.index(END))
 
 
-class ToolbarFrame(Frame):
-    def __init__(self, master=None):
-        Frame.__init__(self, master)
-        self.config(bg='#444444', pady=3, bd=1, relief=GROOVE)
-        self.pack(fill=X)
-
-
 class QuitButton(Button):
     def __init__(self, master=None):
         Button.__init__(self, master)
@@ -93,19 +112,6 @@ class QuitButton(Button):
                     bg='#444444', activebackground='#647899', command='exit',
                     bd=1, relief=GROOVE, padx=4, pady=2)
         self.pack(side=RIGHT)
-
-
-class TextArea(Text):
-    def __init__(self, master=None):
-        Text.__init__(self, master)
-        master.yscroll = Scrollbar(master, orient=VERTICAL)
-        master.yscroll.config(cursor='arrow', command=self.yview,
-                              bg='#5d5d5d', activebackground='#6e6e6e')
-        self['yscrollcommand'] = master.yscroll.set
-        master.yscroll.pack(side=RIGHT, fill=Y)
-        self.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD)
-        self.pack(side=LEFT, expand=YES, fill=BOTH)
-        self.focus()
 
 
 class Application:
