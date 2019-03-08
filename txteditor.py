@@ -82,9 +82,13 @@ class EditMenuButton(FileMenuButton):
         self.menu.add_command(label='Cut')
         self.menu.add_command(label='Copy')
         self.menu.add_command(label='Paste')
-        self.menu.add_command(label='Delete')
+        self.menu.add_command(label='Delete', command=self.deltext)
         self.menu.add_separator()
         self.menu.add_command(label="Select All", command=self.selectall)
+
+    @staticmethod
+    def deltext():
+        Application.text_area.delete(SEL_FIRST, SEL_LAST)
 
     @staticmethod
     def selectall():
