@@ -81,7 +81,7 @@ class EditMenuButton(FileMenuButton):
         self.menu.add_separator()
         self.menu.add_command(label='Cut', command=self.cut_text)
         self.menu.add_command(label='Copy')
-        self.menu.add_command(label='Paste')
+        self.menu.add_command(label='Paste', command=self.paste_text)
         self.menu.add_command(label='Delete', command=self.del_text)
         self.menu.add_separator()
         self.menu.add_command(label="Select All", command=self.select_all)
@@ -93,6 +93,14 @@ class EditMenuButton(FileMenuButton):
             Application.text_area.delete(SEL_FIRST, SEL_LAST)
             Application.text_area.clipboard_clear()
             Application.text_area.clipboard_append(text)
+        except TclError:
+            pass
+
+    @staticmethod
+    def paste_text():
+        try:
+            text = Application.text_area.selection_get(selection='CLIPBOARD')
+            Application.text_area.insert(INSERT, text)
         except TclError:
             pass
 
