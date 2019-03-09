@@ -105,7 +105,6 @@ class EditMenuButton(FileMenuButton):
         except TclError:
             pass
 
-
     @staticmethod
     def paste_text():
         try:
