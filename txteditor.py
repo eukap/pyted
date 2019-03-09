@@ -46,16 +46,16 @@ class FileMenuButton(Menubutton):
         self['menu'] = self.menu
         self.menu.config(activebackground='#647899', bg='#444444')
         self.menu.add_command(label='New')
-        self.menu.add_command(label='Open', command=self.openfile)
+        self.menu.add_command(label='Open', command=self.open_file)
         self.menu.add_command(label='Close')
         self.menu.add_separator()
         self.menu.add_command(label='Save')
-        self.menu.add_command(label='Save As', command=self.saveasfile)
+        self.menu.add_command(label='Save As', command=self.save_as_file)
         self.menu.add_separator()
         self.menu.add_command(label='Exit', command=exit)
 
     @staticmethod
-    def openfile():
+    def open_file():
         file = askopenfile()
         if file:
             Application.text_area.delete(1.0, END)
@@ -63,7 +63,7 @@ class FileMenuButton(Menubutton):
             file.close()
 
     @staticmethod
-    def saveasfile():
+    def save_as_file():
         file = asksaveasfile()
         if file:
             text = Application.text_area.get(1.0, END)
@@ -79,19 +79,32 @@ class EditMenuButton(FileMenuButton):
         self.menu.add_command(label='Undo')
         self.menu.add_command(label='Redo')
         self.menu.add_separator()
-        self.menu.add_command(label='Cut')
+        self.menu.add_command(label='Cut', command=self.cut_text)
         self.menu.add_command(label='Copy')
         self.menu.add_command(label='Paste')
-        self.menu.add_command(label='Delete', command=self.deltext)
+        self.menu.add_command(label='Delete', command=self.del_text)
         self.menu.add_separator()
-        self.menu.add_command(label="Select All", command=self.selectall)
+        self.menu.add_command(label="Select All", command=self.select_all)
 
     @staticmethod
-    def deltext():
-        Application.text_area.delete(SEL_FIRST, SEL_LAST)
+    def cut_text():
+        try:
+            text = Application.text_area.get(SEL_FIRST, SEL_LAST)
+            Application.text_area.delete(SEL_FIRST, SEL_LAST)
+            Application.text_area.clipboard_clear()
+            Application.text_area.clipboard_append(text)
+        except TclError:
+            pass
 
     @staticmethod
-    def selectall():
+    def del_text():
+        try:
+            Application.text_area.delete(SEL_FIRST, SEL_LAST)
+        except TclError:
+            pass
+
+    @staticmethod
+    def select_all():
         Application.text_area.tag_add(SEL, 1.0, END)
 
 
