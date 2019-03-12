@@ -134,8 +134,8 @@ class Application(Frame):
     def create_quit_btn(self):
         quit_btn = Button(self.toolbar)
         quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
-                        bg='#444444', activebackground='#647899',
-                        command='exit', bd=1, relief=GROOVE, padx=4, pady=2)
+                        bg='#444444', activebackground='#647899', command='exit',
+                        bd=1, relief=GROOVE, padx=4, pady=2)
         quit_btn.pack(side=RIGHT)
 
 
