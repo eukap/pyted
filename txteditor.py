@@ -1,25 +1,43 @@
 from tkinter.filedialog import *
 from tkinter import *
+from tkinter.ttk import Notebook, Style
 
 
 class Application(Frame):
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
+        self.filenames = ['Untitled']
+        self.tab_count = 0
+
         self.menubar = Frame(self)
         self.menubar.config(bg='#444444', bd=0, relief=FLAT)
         self.menubar.pack(side=TOP, fill=X)
+
         self.toolbar = Frame(self)
         self.toolbar.config(bg='#444444', bd=1, relief=GROOVE, pady=2)
         self.toolbar.pack(side=TOP, fill=X)
-        self.text = Text(self)
+
+        self.style = Style()
+        self.style.configure('TNotebook', background='#606060')
+
+        self.notebook = Notebook(self)
+        self.notebook.pack(side=TOP, expand=YES, fill=BOTH)
+
+        self.text_frm = Frame(self.notebook)
+        self.text_frm.pack(side=TOP, expand=YES, fill=BOTH)
+
+        self.text = Text(self.text_frm)
         self.text.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD)
         self.text.focus()
-        self.yscroll = Scrollbar(self, orient=VERTICAL)
+        self.yscroll = Scrollbar(self.text_frm, orient=VERTICAL)
         self.yscroll.config(cursor='arrow', command=self.text.yview,
                             bg='#5d5d5d', activebackground='#6e6e6e')
         self.text['yscrollcommand'] = self.yscroll.set
         self.yscroll.pack(side=RIGHT, fill=Y)
         self.text.pack(side=LEFT, expand=YES, fill=BOTH)
+
+        self.notebook.add(self.text_frm, padding=1,
+                          text=self.filenames[self.tab_count])
 
         self.create_file_menu()
         self.create_edit_menu()
@@ -45,20 +63,44 @@ class Application(Frame):
         menu_btn.menu.add_command(label='Exit', command=exit)
 
     def open_file(self):
-        file = askopenfile()
-        if file:
-            self.text.delete(1.0, END)
+        filename = askopenfilename()
+        if filename:
+            modified = self.text.edit_modified()
+            if self.filenames[self.tab_count] == 'Untitled' and not modified:
+                self.notebook.hide(self.tab_count)
+
+            self.tab_count += 1
+            self.filenames.append(filename)
+
+            self.text_frm = Frame(self.notebook)
+            self.text_frm.pack(side=TOP, expand=YES, fill=BOTH)
+
+            self.text = Text(self.text_frm)
+            self.text.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD)
+            self.text.focus()
+            self.yscroll = Scrollbar(self.text_frm, orient=VERTICAL)
+            self.yscroll.config(cursor='arrow', command=self.text.yview,
+                                bg='#5d5d5d', activebackground='#6e6e6e')
+            self.text['yscrollcommand'] = self.yscroll.set
+            self.yscroll.pack(side=RIGHT, fill=Y)
+            self.text.pack(side=LEFT, expand=YES, fill=BOTH)
+
+            self.notebook.add(self.text_frm, padding=1,
+                              text=self.filenames[self.tab_count])
+            self.notebook.select(self.tab_count)
+
+            file = open(filename)
             self.text.insert(1.0, file.read())
             file.close()
 
     def save_file(self):
-        if self.text.edit_modified():
-            pass
+        pass
 
     def save_as_file(self):
-        file = asksaveasfile()
-        if file:
+        filename = asksaveasfilename()
+        if filename:
             text = self.text.get(1.0, END)
+            file = open(filename, 'w')
             file.write(text)
             file.close()
 
@@ -134,8 +176,8 @@ class Application(Frame):
     def create_quit_btn(self):
         quit_btn = Button(self.toolbar)
         quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
-                        bg='#444444', activebackground='#647899', command='exit',
-                        bd=1, relief=GROOVE, padx=4, pady=2)
+                        bg='#444444', activebackground='#647899',
+                        command='exit', bd=1, relief=GROOVE, padx=4, pady=2)
         quit_btn.pack(side=RIGHT)
 
 
@@ -147,6 +189,6 @@ def main():
     frame.pack(side=TOP, expand=YES, fill=BOTH)
     root.mainloop()
 
-    
+
 if __name__ == '__main__':
     main()
