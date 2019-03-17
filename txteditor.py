@@ -1,6 +1,7 @@
 from tkinter.filedialog import *
 from tkinter import *
 from tkinter.ttk import Notebook, Style
+from pathlib import Path
 
 
 class Application(Frame):
@@ -63,9 +64,12 @@ class Application(Frame):
         menu_btn.menu.add_command(label='Exit', command=exit)
 
     def open_file(self):
-        filename = askopenfilename()
-        if filename:
+        filepath = askopenfilename()
+        if filepath:
             modified = self.text.edit_modified()
+            p = Path(filepath)
+            filename = p.parts[-1]
+
             if self.filenames[self.tab_count] == 'Untitled' and not modified:
                 self.notebook.hide(self.tab_count)
 
@@ -89,7 +93,7 @@ class Application(Frame):
                               text=self.filenames[self.tab_count])
             self.notebook.select(self.tab_count)
 
-            file = open(filename)
+            file = open(filepath)
             self.text.insert(1.0, file.read())
             file.close()
 
@@ -97,10 +101,10 @@ class Application(Frame):
         pass
 
     def save_as_file(self):
-        filename = asksaveasfilename()
-        if filename:
+        filepath = asksaveasfilename()
+        if filepath:
             text = self.text.get(1.0, END)
-            file = open(filename, 'w')
+            file = open(filepath, 'w')
             file.write(text)
             file.close()
 
