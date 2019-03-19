@@ -7,8 +7,10 @@ from pathlib import Path
 class Application(Frame):
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
+        # A list with names of files opened in separate tabs
         self.filenames = ['Untitled']
-        self.tab_count = 0
+        # An opened tabs counter
+        self.tabcount = 0
 
         self.menubar = Frame(self)
         self.menubar.config(bg='#444444', bd=0, relief=FLAT)
@@ -38,30 +40,66 @@ class Application(Frame):
         self.text.pack(side=LEFT, expand=YES, fill=BOTH)
 
         self.notebook.add(self.text_frm, padding=1,
-                          text=self.filenames[self.tab_count])
+                          text=self.filenames[self.tabcount])
 
-        self.create_file_menu()
-        self.create_edit_menu()
-        self.create_view_menu()
-        self.create_help_menu()
-        self.create_quit_btn()
+        self.filemenu = Menubutton(self.menubar)
+        self.filemenu.config(text='File', activebackground='#647899',
+                             bg='#444444', underline=0)
+        self.filemenu.pack(side=LEFT)
+        self.filemenu.menu = Menu(self.filemenu, tearoff=0)
+        self.filemenu['menu'] = self.filemenu.menu
+        self.filemenu.menu.config(activebackground='#647899', bg='#444444')
+        self.filemenu.menu.add_command(label='New')
+        self.filemenu.menu.add_command(label='Open', command=self.open_file)
+        self.filemenu.menu.add_command(label='Close')
+        self.filemenu.menu.add_separator()
+        self.filemenu.menu.add_command(label='Save', command=self.save_file,
+                                       state=DISABLED)
+        self.filemenu.menu.add_command(label='Save As',
+                                       command=self.save_as_file)
+        self.filemenu.menu.add_separator()
+        self.filemenu.menu.add_command(label='Exit', command=exit)
 
-    def create_file_menu(self):
-        menu_btn = Menubutton(self.menubar)
-        menu_btn.config(text='File', activebackground='#647899', bg='#444444',
-                        underline=0)
-        menu_btn.pack(side=LEFT)
-        menu_btn.menu = Menu(menu_btn, tearoff=0)
-        menu_btn['menu'] = menu_btn.menu
-        menu_btn.menu.config(activebackground='#647899', bg='#444444')
-        menu_btn.menu.add_command(label='New')
-        menu_btn.menu.add_command(label='Open', command=self.open_file)
-        menu_btn.menu.add_command(label='Close')
-        menu_btn.menu.add_separator()
-        menu_btn.menu.add_command(label='Save', command=self.save_file)
-        menu_btn.menu.add_command(label='Save As', command=self.save_as_file)
-        menu_btn.menu.add_separator()
-        menu_btn.menu.add_command(label='Exit', command=exit)
+        self.editmenu = Menubutton(self.menubar)
+        self.editmenu.config(text='Edit', activebackground='#647899',
+                             bg='#444444', underline=0)
+        self.editmenu.pack(side=LEFT)
+        self.editmenu.menu = Menu(self.editmenu, tearoff=0)
+        self.editmenu['menu'] = self.editmenu.menu
+        self.editmenu.menu.config(activebackground='#647899', bg='#444444')
+        self.editmenu.menu.add_command(label='Undo')
+        self.editmenu.menu.add_command(label='Redo')
+        self.editmenu.menu.add_separator()
+        self.editmenu.menu.add_command(label='Cut', command=self.cut_text)
+        self.editmenu.menu.add_command(label='Copy', command=self.copy_text)
+        self.editmenu.menu.add_command(label='Paste', command=self.paste_text)
+        self.editmenu.menu.add_command(label='Delete', command=self.del_text)
+        self.editmenu.menu.add_separator()
+        self.editmenu.menu.add_command(label="Select All",
+                                       command=self.select_all)
+
+        self.viewmenu = Menubutton(self.menubar)
+        self.viewmenu.config(text='View', activebackground='#647899',
+                             bg='#444444', underline=0)
+        self.viewmenu.pack(side=LEFT)
+        self.viewmenu.menu = Menu(self.viewmenu, tearoff=0)
+        self.viewmenu['menu'] = self.viewmenu.menu
+        self.viewmenu.menu.config(activebackground='#647899', bg='#444444')
+
+        self.helpmenu = Menubutton(self.menubar)
+        self.helpmenu.config(text='Help', activebackground='#647899',
+                             bg='#444444', underline=0)
+        self.helpmenu.pack(side=LEFT)
+        self.helpmenu.menu = Menu(self.helpmenu, tearoff=0)
+        self.helpmenu['menu'] = self.helpmenu.menu
+        self.helpmenu.menu.config(activebackground='#647899', bg='#444444')
+
+        self.quit_btn = Button(self.toolbar)
+        self.quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
+                             bg='#444444', activebackground='#647899',
+                             command='exit', bd=1, relief=GROOVE, padx=4,
+                             pady=2)
+        self.quit_btn.pack(side=RIGHT)
 
     def open_file(self):
         filepath = askopenfilename()
@@ -70,10 +108,10 @@ class Application(Frame):
             p = Path(filepath)
             filename = p.parts[-1]
 
-            if self.filenames[self.tab_count] == 'Untitled' and not modified:
-                self.notebook.hide(self.tab_count)
+            if self.filenames[self.tabcount] == 'Untitled' and not modified:
+                self.notebook.hide(self.tabcount)
 
-            self.tab_count += 1
+            self.tabcount += 1
             self.filenames.append(filename)
 
             self.text_frm = Frame(self.notebook)
@@ -90,12 +128,14 @@ class Application(Frame):
             self.text.pack(side=LEFT, expand=YES, fill=BOTH)
 
             self.notebook.add(self.text_frm, padding=1,
-                              text=self.filenames[self.tab_count])
-            self.notebook.select(self.tab_count)
+                              text=self.filenames[self.tabcount])
+            self.notebook.select(self.tabcount)
 
             file = open(filepath)
             self.text.insert(1.0, file.read())
             file.close()
+
+            self.text.edit_modified(arg=False)
 
     def save_file(self):
         pass
@@ -107,24 +147,6 @@ class Application(Frame):
             file = open(filepath, 'w')
             file.write(text)
             file.close()
-
-    def create_edit_menu(self):
-        menu_btn = Menubutton(self.menubar)
-        menu_btn.config(text='Edit', activebackground='#647899', bg='#444444',
-                        underline=0)
-        menu_btn.pack(side=LEFT)
-        menu_btn.menu = Menu(menu_btn, tearoff=0)
-        menu_btn['menu'] = menu_btn.menu
-        menu_btn.menu.config(activebackground='#647899', bg='#444444')
-        menu_btn.menu.add_command(label='Undo')
-        menu_btn.menu.add_command(label='Redo')
-        menu_btn.menu.add_separator()
-        menu_btn.menu.add_command(label='Cut', command=self.cut_text)
-        menu_btn.menu.add_command(label='Copy', command=self.copy_text)
-        menu_btn.menu.add_command(label='Paste', command=self.paste_text)
-        menu_btn.menu.add_command(label='Delete', command=self.del_text)
-        menu_btn.menu.add_separator()
-        menu_btn.menu.add_command(label="Select All", command=self.select_all)
 
     def cut_text(self):
         try:
@@ -158,31 +180,6 @@ class Application(Frame):
 
     def select_all(self):
         self.text.tag_add(SEL, 1.0, END)
-
-    def create_view_menu(self):
-        menu_btn = Menubutton(self.menubar)
-        menu_btn.config(text='View', activebackground='#647899', bg='#444444',
-                        underline=0)
-        menu_btn.pack(side=LEFT)
-        menu_btn.menu = Menu(menu_btn, tearoff=0)
-        menu_btn['menu'] = menu_btn.menu
-        menu_btn.menu.config(activebackground='#647899', bg='#444444')
-
-    def create_help_menu(self):
-        menu_btn = Menubutton(self.menubar)
-        menu_btn.config(text='Edit', activebackground='#647899', bg='#444444',
-                        underline=0)
-        menu_btn.pack(side=LEFT)
-        menu_btn.menu = Menu(menu_btn, tearoff=0)
-        menu_btn['menu'] = menu_btn.menu
-        menu_btn.menu.config(activebackground='#647899', bg='#444444')
-
-    def create_quit_btn(self):
-        quit_btn = Button(self.toolbar)
-        quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
-                        bg='#444444', activebackground='#647899',
-                        command='exit', bd=1, relief=GROOVE, padx=4, pady=2)
-        quit_btn.pack(side=RIGHT)
 
 
 def main():
