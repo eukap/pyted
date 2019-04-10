@@ -19,7 +19,8 @@ class Application(Frame):
             self.text['yscrollcommand'] = self.yscroll.set
             self.yscroll.pack(side=RIGHT, fill=Y)
             self.text.pack(side=LEFT, expand=YES, fill=BOTH)
-            obj.notebook.add(self.text_frm, padding=1, text=obj.filenames[obj.tabcount])
+
+            obj.notebook.add(self.text_frm, padding=1, text=obj.filenames[-1])
             obj.notebook.select(obj.tabcount)
 
             self.text.edit_modified(arg=False)
@@ -27,6 +28,8 @@ class Application(Frame):
             self.file_menu.entryconfigure(4, state=DISABLED)
             self.text.bind('<FocusIn>', self.check_state)
             self.text.bind('<FocusOut>', self.check_state)
+
+            self.filepath = obj.filepath
 
         def check_state(self, event):
             event.file_menu = self.file_menu
@@ -39,6 +42,8 @@ class Application(Frame):
 
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
+        # A list with paths to opened and/or saved files
+        self.filepaths = []
         # A list with names of files opened in separate tabs
         self.filenames = ['Untitled']
         # An opened tabs counter
@@ -117,6 +122,8 @@ class Application(Frame):
                              pady=2)
         self.quit_btn.pack(side=RIGHT)
 
+        self.filepath = None
+
         self.tab = self.TextFrameTab(self)
 
     def create_newdoc(self):
@@ -127,23 +134,27 @@ class Application(Frame):
     def open_file(self):
         filepath = askopenfilename()
         if filepath:
-            modified = self.tab.text.edit_modified()
+            textwidget = self.focus_lastfor()
+            modified = textwidget.edit_modified()
             p = Path(filepath)
             filename = p.parts[-1]
-
-            if self.filenames[self.tabcount] == 'Untitled' and not modified:
-                self.notebook.forget(self.tabcount)
-                del self.filenames[self.tabcount]
-                self.tabcount -= 1
-
-            self.filenames.append(filename)
-            self.tabcount += 1
-            self.tab = self.TextFrameTab(self)
+            current_index = self.notebook.index('current')
 
             file = open(filepath)
-            self.tab.text.insert(1.0, file.read())
+            if self.filenames[current_index] == 'Untitled' and not modified:
+                self.filenames[current_index] = filename
+                textwidget.insert(1.0, file.read())
+                textwidget.edit_modified(arg=False)
+                self.notebook.tab('current', text=filename)
+            else:
+                self.filenames.append(filename)
+                self.tabcount += 1
+                self.tab = self.TextFrameTab(self)
+                self.tab.text.insert(1.0, file.read())
+                self.tab.text.edit_modified(arg=False)
+                self.notebook.tab(self.tabcount, text=filename)
+                # self.tab.filepath = filepath
             file.close()
-            self.tab.text.edit_modified(arg=False)
 
     def save_file(self):
         pass
@@ -151,46 +162,60 @@ class Application(Frame):
     def save_as_file(self):
         filepath = asksaveasfilename()
         if filepath:
-            tab = self.focus_lastfor()
-            text = tab.get(1.0, END)
+            # self.filepaths.append(filepath)
+            index = self.notebook.index('current')
+            tab = self.notebook[index]
+            tab.filepath = filepath
+
+            p = Path(filepath)
+            filename = p.parts[-1]
+
+            self.notebook.tab('current', text=filename)
+            textwidget = self.focus_lastfor()
+            text = textwidget.get(1.0, END)
             file = open(filepath, 'w')
             file.write(text)
             file.close()
             self.file_menu.entryconfigure(4, state=DISABLED)
-            tab.edit_modified(arg=False)
+            textwidget.edit_modified(arg=False)
 
     def cut_text(self):
+        textwidget = self.focus_lastfor()
         try:
-            text = self.tab.text.get(SEL_FIRST, SEL_LAST)
-            self.tab.text.delete(SEL_FIRST, SEL_LAST)
-            self.tab.text.clipboard_clear()
-            self.tab.text.clipboard_append(text)
+            text = textwidget.get(SEL_FIRST, SEL_LAST)
+            textwidget.delete(SEL_FIRST, SEL_LAST)
+            textwidget.clipboard_clear()
+            textwidget.clipboard_append(text)
         except TclError:
             pass
 
     def copy_text(self):
+        textwidget = self.focus_lastfor()
         try:
-            text = self.tab.text.get(SEL_FIRST, SEL_LAST)
-            self.tab.text.clipboard_clear()
-            self.tab.text.clipboard_append(text)
+            text = textwidget.get(SEL_FIRST, SEL_LAST)
+            textwidget.clipboard_clear()
+            textwidget.clipboard_append(text)
         except TclError:
             pass
 
     def paste_text(self):
+        textwidget = self.focus_lastfor()
         try:
-            text = self.tab.text.selection_get(selection='CLIPBOARD')
-            self.tab.text.insert(INSERT, text)
+            text = textwidget.selection_get(selection='CLIPBOARD')
+            textwidget.insert(INSERT, text)
         except TclError:
             pass
 
     def del_text(self):
+        textwidget = self.focus_lastfor()
         try:
-            self.tab.text.delete(SEL_FIRST, SEL_LAST)
+            textwidget.delete(SEL_FIRST, SEL_LAST)
         except TclError:
             pass
 
     def select_all(self):
-        self.tab.text.tag_add(SEL, 1.0, END)
+        textwidget = self.focus_lastfor()
+        textwidget.tag_add(SEL, 1.0, END)
 
 
 def main():
