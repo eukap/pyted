@@ -21,7 +21,7 @@ class Application(Frame):
             self.text.pack(side=LEFT, expand=YES, fill=BOTH)
 
             obj.notebook.add(self.text_frm, padding=1, text=obj.filenames[-1])
-            obj.notebook.select(obj.tabcount)
+            obj.notebook.select(self.text_frm)
 
             self.text.edit_modified(arg=False)
             self.file_menu = obj.file_menu
@@ -44,8 +44,6 @@ class Application(Frame):
         self.filepaths = {}
         # A list with names of files opened in separate tabs
         self.filenames = ['Untitled']
-        # An opened tabs counter
-        self.tabcount = 0
 
         self.menubar = Frame(self)
         self.menubar.config(bg='#444444', bd=0, relief=FLAT)
@@ -71,7 +69,7 @@ class Application(Frame):
         self.file_menu.config(activebackground='#647899', bg='#444444')
         self.file_menu.add_command(label='New', command=self.create_newdoc)
         self.file_menu.add_command(label='Open', command=self.open_file)
-        self.file_menu.add_command(label='Close')
+        self.file_menu.add_command(label='Close', command=self.close_tab)
         self.file_menu.add_separator()
         self.file_menu.add_command(label='Save', command=self.save_file)
         self.file_menu.add_command(label='Save As',
@@ -123,7 +121,6 @@ class Application(Frame):
         self.tab = self.TextFrameTab(self)
 
     def create_newdoc(self):
-        self.tabcount += 1
         self.filenames.append('Untitled')
         self.tab = self.TextFrameTab(self)
 
@@ -145,12 +142,14 @@ class Application(Frame):
                 self.notebook.tab('current', text=filename)
             else:
                 self.filenames.append(filename)
-                self.tabcount += 1
                 self.tab = self.TextFrameTab(self)
                 self.tab.text.insert(1.0, file.read())
                 self.tab.text.edit_modified(arg=False)
-                self.notebook.tab(self.tabcount, text=filename)
+                self.notebook.tab('current', text=filename)
             file.close()
+
+    def close_tab(self):
+        self.notebook.forget('current')
 
     def save_file(self):
         current_index = self.notebook.index('current')
