@@ -118,38 +118,53 @@ class Application(Frame):
                              pady=2)
         self.quit_btn.pack(side=RIGHT)
 
-        self.tab = self.TextFrameTab(self)
+        self.TextFrameTab(self)
 
     def create_newdoc(self):
         self.filenames.append('Untitled')
-        self.tab = self.TextFrameTab(self)
+        self.TextFrameTab(self)
 
     def open_file(self):
         filepath = askopenfilename()
         if filepath:
-            textwidget = self.focus_lastfor()
-            modified = textwidget.edit_modified()
             p = Path(filepath)
             filename = p.parts[-1]
-            current_index = self.notebook.index('current')
-            self.filepaths[current_index] = filepath
 
             file = open(filepath)
-            if self.filenames[current_index] == 'Untitled' and not modified:
-                self.filenames[current_index] = filename
-                textwidget.insert(1.0, file.read())
-                textwidget.edit_modified(arg=False)
-                self.notebook.tab('current', text=filename)
+            if (self.notebook.index('end')) > 0:
+                textwidget = self.notebook.focus_get()
+                modified = textwidget.edit_modified()
+                current_index = self.notebook.index('current')
+                self.filepaths[current_index] = filepath
+
+                if (self.filenames[current_index] == 'Untitled' and
+                        not modified):
+                    self.filenames[current_index] = filename
+                    textwidget.insert(1.0, file.read())
+                    textwidget.edit_modified(arg=False)
+                    self.notebook.tab('current', text=filename)
+                else:
+                    self.filenames.append(filename)
+                    tab = self.TextFrameTab(self)
+                    tab.text.insert(1.0, file.read())
+                    tab.text.edit_modified(arg=False)
+                    self.notebook.tab('current', text=filename)
+
             else:
                 self.filenames.append(filename)
-                self.tab = self.TextFrameTab(self)
-                self.tab.text.insert(1.0, file.read())
-                self.tab.text.edit_modified(arg=False)
+                tab = self.TextFrameTab(self)
+                tab.text.insert(1.0, file.read())
+                tab.text.edit_modified(arg=False)
                 self.notebook.tab('current', text=filename)
             file.close()
 
     def close_tab(self):
-        self.notebook.forget('current')
+        current_index = self.notebook.index('current')
+        self.notebook.forget(current_index)
+        del self.filenames[current_index]
+
+        if current_index in self.filepaths:
+            del self.filepaths[current_index]
 
     def save_file(self):
         current_index = self.notebook.index('current')
