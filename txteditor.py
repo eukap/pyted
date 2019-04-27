@@ -11,7 +11,8 @@ class Application(Frame):
             self.text_frm.pack(side=TOP, expand=YES, fill=BOTH)
 
             self.text = Text(self.text_frm)
-            self.text.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD)
+            self.text.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD,
+                             undo=True, maxundo=-1)
             self.text.focus()
             self.yscroll = Scrollbar(self.text_frm, orient=VERTICAL)
             self.yscroll.config(cursor='arrow', command=self.text.yview,
@@ -26,17 +27,25 @@ class Application(Frame):
             self.text.edit_modified(arg=False)
             self.file_menu = obj.file_menu
             self.file_menu.entryconfigure(4, state=DISABLED)
+            self.edit_menu = obj.edit_menu
+            self.edit_menu.entryconfigure(0, state=DISABLED)
+            self.edit_menu.entryconfigure(1, state=DISABLED)
             self.text.bind('<FocusIn>', self.check_state)
             self.text.bind('<FocusOut>', self.check_state)
 
         def check_state(self, event):
             event.file_menu = self.file_menu
+            event.edit_menu = self.edit_menu
             modified = self.text.edit_modified()
             if modified:
                 event.file_menu.entryconfigure(4, state=ACTIVE)
                 event.file_menu.entryconfigure(0, state=ACTIVE)
+                event.edit_menu.entryconfigure(1, state=ACTIVE)
+                event.edit_menu.entryconfigure(0, state=ACTIVE)
             else:
                 event.file_menu.entryconfigure(4, state=DISABLED)
+                event.edit_menu.entryconfigure(0, state=DISABLED)
+                event.edit_menu.entryconfigure(1, state=DISABLED)
 
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
@@ -84,8 +93,8 @@ class Application(Frame):
         self.edit_menu = Menu(self.edit_menubtn, tearoff=0)
         self.edit_menubtn['menu'] = self.edit_menu
         self.edit_menu.config(activebackground='#647899', bg='#444444')
-        self.edit_menu.add_command(label='Undo')
-        self.edit_menu.add_command(label='Redo')
+        self.edit_menu.add_command(label='Undo', command=self.undo)
+        self.edit_menu.add_command(label='Redo', command=self.redo)
         self.edit_menu.add_separator()
         self.edit_menu.add_command(label='Cut', command=self.cut_text)
         self.edit_menu.add_command(label='Copy', command=self.copy_text)
@@ -191,6 +200,14 @@ class Application(Frame):
             file.close()
             self.file_menu.entryconfigure(4, state=DISABLED)
             textwidget.edit_modified(arg=False)
+
+    def undo(self):
+        textwidget = self.focus_lastfor()
+        textwidget.edit_undo()
+
+    def redo(self):
+        textwidget = self.focus_lastfor()
+        textwidget.edit_redo()
 
     def cut_text(self):
         textwidget = self.focus_lastfor()
