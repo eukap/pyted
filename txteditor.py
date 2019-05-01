@@ -26,26 +26,24 @@ class Application(Frame):
 
             self.text.edit_modified(arg=False)
             self.file_menu = obj.file_menu
+            # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
-            self.edit_menu = obj.edit_menu
-            self.edit_menu.entryconfigure(0, state=DISABLED)
-            self.edit_menu.entryconfigure(1, state=DISABLED)
+            # Disable 'Undo' menu item
+            obj.edit_menu.entryconfigure(0, state=DISABLED)
+            # Disable 'Redo' menu item
+            obj.edit_menu.entryconfigure(1, state=DISABLED)
             self.text.bind('<FocusIn>', self.check_state)
             self.text.bind('<FocusOut>', self.check_state)
 
         def check_state(self, event):
             event.file_menu = self.file_menu
-            event.edit_menu = self.edit_menu
             modified = self.text.edit_modified()
             if modified:
+                # Enable 'Save' menu item
                 event.file_menu.entryconfigure(4, state=ACTIVE)
                 event.file_menu.entryconfigure(0, state=ACTIVE)
-                event.edit_menu.entryconfigure(1, state=ACTIVE)
-                event.edit_menu.entryconfigure(0, state=ACTIVE)
             else:
                 event.file_menu.entryconfigure(4, state=DISABLED)
-                event.edit_menu.entryconfigure(0, state=DISABLED)
-                event.edit_menu.entryconfigure(1, state=DISABLED)
 
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
