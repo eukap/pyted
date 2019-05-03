@@ -193,15 +193,18 @@ class Application(Frame):
 
     def save_file(self):
         current_index = self.notebook.index('current')
-        textwidget = self.focus_lastfor()
-        text = textwidget.get(1.0, END)
-        file = open(self.filepaths[current_index], 'w')
-        file.write(text)
-        file.close()
-        self.file_menu.entryconfigure(4, state=DISABLED)
-        textwidget.edit_modified(arg=False)
-        textwidget.edit_reset()
-        self.undo_counts[current_index] = 0
+        if current_index in self.filepaths:
+            textwidget = self.focus_lastfor()
+            text = textwidget.get(1.0, END)
+            file = open(self.filepaths[current_index], 'w')
+            file.write(text)
+            file.close()
+            self.file_menu.entryconfigure(4, state=DISABLED)
+            textwidget.edit_modified(arg=False)
+            textwidget.edit_reset()
+            self.undo_counts[current_index] = 0
+        else:
+            self.save_as_file()
 
     def save_as_file(self):
         filepath = asksaveasfilename()
