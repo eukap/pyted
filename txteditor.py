@@ -133,33 +133,32 @@ class Application(Frame):
             p = Path(filepath)
             filename = p.parts[-1]
 
-            file = open(filepath)
-            if (self.notebook.index('end')) > 0:
-                textwidget = self.notebook.focus_get()
-                modified = textwidget.edit_modified()
-                current_index = self.notebook.index('current')
-                self.filepaths[current_index] = filepath
+            with open(filepath) as file:
+                if (self.notebook.index('end')) > 0:
+                    textwidget = self.notebook.focus_get()
+                    modified = textwidget.edit_modified()
+                    current_index = self.notebook.index('current')
+                    self.filepaths[current_index] = filepath
 
-                if (self.filenames[current_index] == 'Untitled' and
-                        not modified):
-                    self.filenames[current_index] = filename
-                    textwidget.insert(1.0, file.read())
-                    textwidget.edit_modified(arg=False)
-                    self.notebook.tab('current', text=filename)
+                    if (self.filenames[current_index] == 'Untitled' and
+                            not modified):
+                        self.filenames[current_index] = filename
+                        textwidget.insert(1.0, file.read())
+                        textwidget.edit_modified(arg=False)
+                        self.notebook.tab('current', text=filename)
+                    else:
+                        self.filenames.append(filename)
+                        tab = self.TextFrameTab(self)
+                        tab.text.insert(1.0, file.read())
+                        tab.text.edit_modified(arg=False)
+                        self.notebook.tab('current', text=filename)
+
                 else:
                     self.filenames.append(filename)
                     tab = self.TextFrameTab(self)
                     tab.text.insert(1.0, file.read())
                     tab.text.edit_modified(arg=False)
                     self.notebook.tab('current', text=filename)
-
-            else:
-                self.filenames.append(filename)
-                tab = self.TextFrameTab(self)
-                tab.text.insert(1.0, file.read())
-                tab.text.edit_modified(arg=False)
-                self.notebook.tab('current', text=filename)
-            file.close()
 
     def close_tab(self):
         try:
@@ -177,9 +176,8 @@ class Application(Frame):
         if current_index in self.filepaths:
             textwidget = self.focus_lastfor()
             text = textwidget.get(1.0, END)
-            file = open(self.filepaths[current_index], 'w')
-            file.write(text)
-            file.close()
+            with open(self.filepaths[current_index], 'w') as file:
+                file.write(text)
             self.file_menu.entryconfigure(4, state=DISABLED)
             textwidget.edit_modified(arg=False)
         else:
@@ -195,9 +193,8 @@ class Application(Frame):
             self.notebook.tab('current', text=filename)
             textwidget = self.focus_lastfor()
             text = textwidget.get(1.0, END)
-            file = open(filepath, 'w')
-            file.write(text)
-            file.close()
+            with open(filepath, 'w') as file:
+                file.write(text)
             self.file_menu.entryconfigure(4, state=DISABLED)
             textwidget.edit_modified(arg=False)
 
