@@ -12,7 +12,7 @@ class Application(Frame):
 
             self.text = Text(self.text_frm)
             self.text.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD,
-                             undo=True, maxundo=-1, autoseparators=True)
+                             undo=True, maxundo=50, autoseparators=True)
             self.text.focus()
             self.yscroll = Scrollbar(self.text_frm, orient=VERTICAL)
             self.yscroll.config(cursor='arrow', command=self.text.yview,
@@ -24,41 +24,22 @@ class Application(Frame):
             obj.notebook.add(self.text_frm, padding=1, text=obj.filenames[-1])
             obj.notebook.select(self.text_frm)
 
-            self.undo_counts = obj.undo_counts
-            self.undo_counts.append(0)
-            self.current_index = obj.notebook.index('current')
-
             self.text.edit_modified(arg=False)
             self.file_menu = obj.file_menu
             # Disable 'Save' menu item
-            obj.file_menu.entryconfigure(4, state=DISABLED)
-            self.edit_menu = obj.edit_menu
-            # Disable 'Undo' menu item
-            obj.edit_menu.entryconfigure(0, state=DISABLED)
-            # Disable 'Redo' menu item
-            obj.edit_menu.entryconfigure(1, state=DISABLED)
+            self.file_menu.entryconfigure(4, state=DISABLED)
             self.text.bind('<FocusIn>', self.check_state)
             self.text.bind('<FocusOut>', self.check_state)
 
         def check_state(self, event):
             event.file_menu = self.file_menu
-            event.edit_menu = self.edit_menu
-            event.undo_counts = self.undo_counts
             modified = self.text.edit_modified()
             if modified:
                 # Enable 'Save' menu item
                 event.file_menu.entryconfigure(4, state=ACTIVE)
                 event.file_menu.entryconfigure(0, state=ACTIVE)
-                # Enable 'Undo' menu item
-                event.edit_menu.entryconfigure(0, state=ACTIVE)
             else:
                 event.file_menu.entryconfigure(4, state=DISABLED)
-                event.edit_menu.entryconfigure(0, state=DISABLED)
-            if event.undo_counts[self.current_index] > 0:
-                # Enable 'Redo' menu item
-                event.edit_menu.entryconfigure(1, state=ACTIVE)
-            else:
-                event.edit_menu.entryconfigure(1, state=DISABLED)
 
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
@@ -66,8 +47,6 @@ class Application(Frame):
         self.filepaths = {}
         # A list with names of files opened in separate tabs
         self.filenames = ['Untitled']
-        # A list with undo stack counters for all tabs
-        self.undo_counts = []
 
         self.menubar = Frame(self)
         self.menubar.config(bg='#444444', bd=0, relief=FLAT)
@@ -186,7 +165,6 @@ class Application(Frame):
         current_index = self.notebook.index('current')
         self.notebook.forget(current_index)
         del self.filenames[current_index]
-        del self.undo_counts[current_index]
 
         if current_index in self.filepaths:
             del self.filepaths[current_index]
@@ -201,8 +179,6 @@ class Application(Frame):
             file.close()
             self.file_menu.entryconfigure(4, state=DISABLED)
             textwidget.edit_modified(arg=False)
-            textwidget.edit_reset()
-            self.undo_counts[current_index] = 0
         else:
             self.save_as_file()
 
@@ -221,20 +197,20 @@ class Application(Frame):
             file.close()
             self.file_menu.entryconfigure(4, state=DISABLED)
             textwidget.edit_modified(arg=False)
-            textwidget.edit_reset()
-            self.undo_counts[current_index] = 0
 
     def undo(self):
         textwidget = self.focus_lastfor()
-        textwidget.edit_undo()
-        current_index = self.notebook.index('current')
-        self.undo_counts[current_index] += 1
+        try:
+            textwidget.edit_undo()
+        except TclError:
+            pass
 
     def redo(self):
         textwidget = self.focus_lastfor()
-        textwidget.edit_redo()
-        current_index = self.notebook.index('current')
-        self.undo_counts[current_index] -= 1
+        try:
+            textwidget.edit_redo()
+        except TclError:
+            pass
 
     def cut_text(self):
         textwidget = self.focus_lastfor()
