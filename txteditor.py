@@ -162,12 +162,15 @@ class Application(Frame):
             file.close()
 
     def close_tab(self):
-        current_index = self.notebook.index('current')
-        self.notebook.forget(current_index)
-        del self.filenames[current_index]
+        try:
+            current_index = self.notebook.index('current')
+            self.notebook.forget(current_index)
+            del self.filenames[current_index]
 
-        if current_index in self.filepaths:
-            del self.filepaths[current_index]
+            if current_index in self.filepaths:
+                del self.filepaths[current_index]
+        except TclError:
+            pass
 
     def save_file(self):
         current_index = self.notebook.index('current')
