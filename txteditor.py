@@ -1,5 +1,6 @@
 from tkinter.filedialog import *
 from tkinter import *
+from tkinter.messagebox import *
 from tkinter.ttk import Notebook, Style
 from pathlib import Path
 
@@ -152,7 +153,6 @@ class Application(Frame):
                         tab.text.insert(1.0, file.read())
                         tab.text.edit_modified(arg=False)
                         self.notebook.tab('current', text=filename)
-
                 else:
                     self.filenames.append(filename)
                     tab = self.TextFrameTab(self)
@@ -161,15 +161,32 @@ class Application(Frame):
                     self.notebook.tab('current', text=filename)
 
     def close_tab(self):
-        try:
-            current_index = self.notebook.index('current')
-            self.notebook.forget(current_index)
-            del self.filenames[current_index]
+        def close(obj):
+            try:
+                current_index = self.notebook.index('current')
+                obj.notebook.forget(current_index)
+                del obj.filenames[current_index]
 
-            if current_index in self.filepaths:
-                del self.filepaths[current_index]
-        except TclError:
-            pass
+                if current_index in obj.filepaths:
+                    del obj.filepaths[current_index]
+            except TclError:
+                pass
+
+        textwidget = self.focus_lastfor()
+        modified = textwidget.edit_modified()
+        if modified:
+            cur_index = self.notebook.index('current')
+            msg = "'{}' has been modified. Do you want" \
+                  "to save changes?".format(self.filenames[cur_index])
+            messagebox = Message(type=YESNOCANCEL, message=msg, icon=QUESTION)
+            answer = messagebox.show()
+            if answer == YES:
+                self.save_file()
+                close(self)
+            elif answer == NO:
+                close(self)
+        else:
+            close(self)
 
     def save_file(self):
         current_index = self.notebook.index('current')
