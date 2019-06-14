@@ -21,14 +21,15 @@ class Application(Frame):
             self.text['yscrollcommand'] = self.yscroll.set
             self.yscroll.pack(side=RIGHT, fill=Y)
             self.text.pack(side=LEFT, expand=YES, fill=BOTH)
+            self.text.edit_modified(arg=False)
 
             obj.notebook.add(self.text_frm, padding=1, text=obj.filenames[-1])
             obj.notebook.select(self.text_frm)
 
-            self.text.edit_modified(arg=False)
             self.file_menu = obj.file_menu
             # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
+
             self.text.bind('<FocusIn>', self.check_state)
             self.text.bind('<FocusOut>', self.check_state)
 
@@ -96,7 +97,7 @@ class Application(Frame):
         self.edit_menu.add_command(label='Paste', command=self.paste_text)
         self.edit_menu.add_command(label='Delete', command=self.del_text)
         self.edit_menu.add_separator()
-        self.edit_menu.add_command(label="Select All",
+        self.edit_menu.add_command(label='Select All',
                                    command=self.select_all)
 
         self.view_menubtn = Menubutton(self.menubar)
@@ -129,36 +130,39 @@ class Application(Frame):
         self.TextFrameTab(self)
 
     def open_file(self):
-        filepath = askopenfilename()
+        filepath = askopenfilename(filetypes=(("All files", "*"), ))
         if filepath:
             p = Path(filepath)
             filename = p.parts[-1]
+            try:
+                with open(filepath) as file:
+                    if (self.notebook.index('end')) > 0:
+                        textwidget = self.notebook.focus_get()
+                        modified = textwidget.edit_modified()
+                        current_index = self.notebook.index('current')
+                        self.filepaths[current_index] = filepath
 
-            with open(filepath) as file:
-                if (self.notebook.index('end')) > 0:
-                    textwidget = self.notebook.focus_get()
-                    modified = textwidget.edit_modified()
-                    current_index = self.notebook.index('current')
-                    self.filepaths[current_index] = filepath
-
-                    if (self.filenames[current_index] == 'Untitled' and
-                            not modified):
-                        self.filenames[current_index] = filename
-                        textwidget.insert(1.0, file.read())
-                        textwidget.edit_modified(arg=False)
-                        self.notebook.tab('current', text=filename)
+                        if (self.filenames[current_index] == 'Untitled' and
+                                not modified):
+                            self.filenames[current_index] = filename
+                            textwidget.insert(1.0, file.read())
+                            textwidget.edit_modified(arg=False)
+                            self.notebook.tab('current', text=filename)
+                        else:
+                            self.filenames.append(filename)
+                            tab = self.TextFrameTab(self)
+                            tab.text.insert(1.0, file.read())
+                            tab.text.edit_modified(arg=False)
+                            self.notebook.tab('current', text=filename)
                     else:
                         self.filenames.append(filename)
                         tab = self.TextFrameTab(self)
                         tab.text.insert(1.0, file.read())
                         tab.text.edit_modified(arg=False)
                         self.notebook.tab('current', text=filename)
-                else:
-                    self.filenames.append(filename)
-                    tab = self.TextFrameTab(self)
-                    tab.text.insert(1.0, file.read())
-                    tab.text.edit_modified(arg=False)
-                    self.notebook.tab('current', text=filename)
+            except UnicodeDecodeError:
+                msg = "'{}' has an incorrect type!".format(filename)
+                showerror(message=msg)
 
     def close_tab(self):
         def close(obj):
@@ -176,10 +180,10 @@ class Application(Frame):
         modified = textwidget.edit_modified()
         if modified:
             cur_index = self.notebook.index('current')
-            msg = "'{}' has been modified. Do you want" \
+            msg = "'{}' has been modified. Do you want " \
                   "to save changes?".format(self.filenames[cur_index])
-            messagebox = Message(type=YESNOCANCEL, message=msg, icon=QUESTION)
-            answer = messagebox.show()
+            msgbox = Message(type=YESNOCANCEL, message=msg, icon=QUESTION)
+            answer = msgbox.show()
             if answer == YES:
                 self.save_file()
                 close(self)
