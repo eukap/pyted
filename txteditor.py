@@ -169,6 +169,8 @@ class Application(Frame):
             except UnicodeDecodeError:
                 msg = "'{}' has an incorrect type!".format(filename)
                 showerror(message=msg)
+                self.close_tab()
+                self.create_newdoc()
 
     def close_tab(self):
         def close(obj):
