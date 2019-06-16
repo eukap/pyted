@@ -66,12 +66,14 @@ class Application(Frame):
         self.notebook.pack(side=TOP, expand=YES, fill=BOTH)
 
         self.file_menubtn = Menubutton(self.menubar)
-        self.file_menubtn.config(text='File', activebackground='#647899',
-                                 bg='#444444', underline=0)
+        self.file_menubtn.config(text='File', bg='#444444', fg='#eeeeee',
+                                 activeforeground='#eeeeee',
+                                 activebackground='#647899', underline=0)
         self.file_menubtn.pack(side=LEFT)
         self.file_menu = Menu(self.file_menubtn, tearoff=0)
         self.file_menubtn['menu'] = self.file_menu
-        self.file_menu.config(activebackground='#647899', bg='#444444')
+        self.file_menu.config(fg='#eeeeee', activeforeground='#eeeeee',
+                              bg='#444444', activebackground='#647899')
         self.file_menu.add_command(label='New', command=self.create_newdoc)
         self.file_menu.add_command(label='Open', command=self.open_file)
         self.file_menu.add_command(label='Close', command=self.close_tab)
@@ -83,12 +85,14 @@ class Application(Frame):
         self.file_menu.add_command(label='Exit', command=exit)
 
         self.edit_menubtn = Menubutton(self.menubar)
-        self.edit_menubtn.config(text='Edit', activebackground='#647899',
-                                 bg='#444444', underline=0)
+        self.edit_menubtn.config(text='Edit', fg='#eeeeee', bg='#444444',
+                                 activebackground='#647899',
+                                 activeforeground='#eeeeee', underline=0)
         self.edit_menubtn.pack(side=LEFT)
         self.edit_menu = Menu(self.edit_menubtn, tearoff=0)
         self.edit_menubtn['menu'] = self.edit_menu
-        self.edit_menu.config(activebackground='#647899', bg='#444444')
+        self.edit_menu.config(fg='#eeeeee', activeforeground='#eeeeee',
+                              bg='#444444', activebackground='#647899')
         self.edit_menu.add_command(label='Undo', command=self.undo)
         self.edit_menu.add_command(label='Redo', command=self.redo)
         self.edit_menu.add_separator()
@@ -101,16 +105,18 @@ class Application(Frame):
                                    command=self.select_all)
 
         self.view_menubtn = Menubutton(self.menubar)
-        self.view_menubtn.config(text='View', activebackground='#647899',
-                                 bg='#444444', underline=0)
+        self.view_menubtn.config(text='View', fg='#eeeeee', bg='#444444',
+                                 activeforeground='#eeeeee',
+                                 activebackground='#647899', underline=0)
         self.view_menubtn.pack(side=LEFT)
         self.view_menu = Menu(self.view_menubtn, tearoff=0)
         self.view_menubtn['menu'] = self.view_menu
         self.view_menu.config(activebackground='#647899', bg='#444444')
 
         self.help_menubtn = Menubutton(self.menubar)
-        self.help_menubtn.config(text='Help', activebackground='#647899',
-                                 bg='#444444', underline=0)
+        self.help_menubtn.config(text='Help', fg='#eeeeee', bg='#444444',
+                                 activeforeground='#eeeeee',
+                                 activebackground='#647899', underline=0)
         self.help_menubtn.pack(side=LEFT)
         self.help_menu = Menu(self.help_menubtn, tearoff=0)
         self.help_menubtn['menu'] = self.help_menu
@@ -119,8 +125,8 @@ class Application(Frame):
         self.quit_btn = Button(self.toolbar)
         self.quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
                              bg='#444444', activebackground='#647899',
-                             command='exit', bd=1, relief=GROOVE, padx=4,
-                             pady=2)
+                             activeforeground='#eeeeee', command='exit', bd=0,
+                             relief=GROOVE, padx=4, pady=2)
         self.quit_btn.pack(side=RIGHT)
 
         self.TextFrameTab(self)
