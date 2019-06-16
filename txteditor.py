@@ -22,6 +22,7 @@ class Application(Frame):
             self.yscroll.pack(side=RIGHT, fill=Y)
             self.text.pack(side=LEFT, expand=YES, fill=BOTH)
             self.text.edit_modified(arg=False)
+            obj.textwidgets.append(self.text)
 
             obj.notebook.add(self.text_frm, padding=1, text=obj.filenames[-1])
             obj.notebook.select(self.text_frm)
@@ -49,6 +50,8 @@ class Application(Frame):
         self.filepaths = {}
         # A list with names of files opened in separate tabs
         self.filenames = ['Untitled']
+        # A list with existing text widgets
+        self.textwidgets = []
 
         self.menubar = Frame(self)
         self.menubar.config(bg='#444444', bd=0, relief=FLAT)
@@ -82,7 +85,7 @@ class Application(Frame):
         self.file_menu.add_command(label='Save As',
                                    command=self.save_as_file)
         self.file_menu.add_separator()
-        self.file_menu.add_command(label='Exit', command=exit)
+        self.file_menu.add_command(label='Exit', command=self.quit_fromapp)
 
         self.edit_menubtn = Menubutton(self.menubar)
         self.edit_menubtn.config(text='Edit', fg='#eeeeee', bg='#444444',
@@ -125,8 +128,8 @@ class Application(Frame):
         self.quit_btn = Button(self.toolbar)
         self.quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
                              bg='#444444', activebackground='#647899',
-                             activeforeground='#eeeeee', command='exit', bd=0,
-                             relief=GROOVE, padx=4, pady=2)
+                             activeforeground='#eeeeee', bd=0,  relief=GROOVE,
+                             padx=4, pady=2, command=self.quit_fromapp)
         self.quit_btn.pack(side=RIGHT)
 
         self.TextFrameTab(self)
@@ -178,6 +181,7 @@ class Application(Frame):
                 current_index = self.notebook.index('current')
                 obj.notebook.forget(current_index)
                 del obj.filenames[current_index]
+                del obj.textwidgets[current_index]
 
                 if current_index in obj.filepaths:
                     del obj.filepaths[current_index]
@@ -187,9 +191,9 @@ class Application(Frame):
         textwidget = self.focus_lastfor()
         modified = textwidget.edit_modified()
         if modified:
-            cur_index = self.notebook.index('current')
+            curr_index = self.notebook.index('current')
             msg = "'{}' has been modified. Do you want " \
-                  "to save changes?".format(self.filenames[cur_index])
+                  "to save changes?".format(self.filenames[curr_index])
             msgbox = Message(type=YESNOCANCEL, message=msg, icon=QUESTION)
             answer = msgbox.show()
             if answer == YES:
@@ -278,6 +282,20 @@ class Application(Frame):
     def select_all(self):
         textwidget = self.focus_lastfor()
         textwidget.tag_add(SEL, 1.0, END)
+
+    def quit_fromapp(self):
+        for widget in self.textwidgets:
+            if widget.edit_modified():
+                msg = "Some changes haven't been saved. " \
+                      "Do you really want to exit?"
+                msgbox = Message(type=YESNO, message=msg, icon=QUESTION)
+                answer = msgbox.show()
+                if answer == YES:
+                    self.quit()
+                else:
+                    break
+        else:
+            self.quit()
 
 
 def main():
