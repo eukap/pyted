@@ -304,6 +304,7 @@ def main():
     root.geometry('650x500')
     frame = Application(root)
     frame.pack(side=TOP, expand=YES, fill=BOTH)
+    root.protocol("WM_DELETE_WINDOW", frame.quit_fromapp)
     root.mainloop()
 
 
