@@ -29,8 +29,8 @@ class Application(Frame):
 
             self.file_menu = obj.file_menu
             self.notebook = obj.notebook
+            self.current_index = obj.notebook.index('current')
             self.filenames = obj.filenames
-            self.fname = obj.filenames[-1]
             # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
 
@@ -41,16 +41,14 @@ class Application(Frame):
 
         def check_state(self, event):
             event.file_menu = self.file_menu
-            event.notebook = self.notebook
-            event.fname = self.fname
             modified = self.text.edit_modified()
             if modified:
                 # Enable 'Save' menu item
                 event.file_menu.entryconfigure(4, state=NORMAL)
-                current_index = event.notebook.index('current')
-                event.notebook.tab(current_index, text='*' + event.fname)
+                self.notebook.tab(self.current_index, text='*' + self.filenames[self.current_index])
             else:
                 event.file_menu.entryconfigure(4, state=DISABLED)
+                self.notebook.tab(self.current_index, text=self.filenames[self.current_index])
 
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
@@ -232,6 +230,7 @@ class Application(Frame):
             current_index = self.notebook.index('current')
             self.filepaths[current_index] = filepath
             self.notebook.tab('current', text=filename)
+            self.filenames[current_index] = filename
             textwidget = self.focus_lastfor()
             text = textwidget.get(1.0, END)
             with open(filepath, 'w') as file:
