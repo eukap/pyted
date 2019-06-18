@@ -28,19 +28,27 @@ class Application(Frame):
             obj.notebook.select(self.text_frm)
 
             self.file_menu = obj.file_menu
+            self.notebook = obj.notebook
+            self.filenames = obj.filenames
+            self.fname = obj.filenames[-1]
             # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
 
             self.text.bind('<FocusIn>', self.check_state)
             self.text.bind('<FocusOut>', self.check_state)
+            self.text.bind('<Any-Key>', self.check_state)
+            self.text.bind('<Any-KeyRelease>', self.check_state)
 
         def check_state(self, event):
             event.file_menu = self.file_menu
+            event.notebook = self.notebook
+            event.fname = self.fname
             modified = self.text.edit_modified()
             if modified:
                 # Enable 'Save' menu item
-                event.file_menu.entryconfigure(4, state=ACTIVE)
-                event.file_menu.entryconfigure(0, state=ACTIVE)
+                event.file_menu.entryconfigure(4, state=NORMAL)
+                current_index = event.notebook.index('current')
+                event.notebook.tab(current_index, text='*' + event.fname)
             else:
                 event.file_menu.entryconfigure(4, state=DISABLED)
 
@@ -284,16 +292,18 @@ class Application(Frame):
         textwidget.tag_add(SEL, 1.0, END)
 
     def quit_fromapp(self):
+        modified = False
         for widget in self.textwidgets:
             if widget.edit_modified():
-                msg = "Some changes haven't been saved. " \
-                      "Do you really want to exit?"
-                msgbox = Message(type=YESNO, message=msg, icon=QUESTION)
-                answer = msgbox.show()
-                if answer == YES:
-                    self.quit()
-                else:
-                    break
+                modified = True
+                break
+        if modified:
+            msg = "Some changes haven't been saved. " \
+                  "Do you really want to exit?"
+            msgbox = Message(type=YESNO, message=msg, icon=QUESTION)
+            answer = msgbox.show()
+            if answer == YES:
+                self.quit()
         else:
             self.quit()
 
