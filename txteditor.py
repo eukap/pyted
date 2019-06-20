@@ -29,8 +29,9 @@ class Application(Frame):
 
             self.file_menu = obj.file_menu
             self.notebook = obj.notebook
-            self.current_index = obj.notebook.index('current')
             self.filenames = obj.filenames
+            self.save_btn = obj.save_btn
+
             # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
 
@@ -38,17 +39,30 @@ class Application(Frame):
             self.text.bind('<FocusOut>', self.check_state)
             self.text.bind('<Any-Key>', self.check_state)
             self.text.bind('<Any-KeyRelease>', self.check_state)
+            self.save_btn.bind('<Motion>', self.check_state)
 
         def check_state(self, event):
             event.file_menu = self.file_menu
             modified = self.text.edit_modified()
-            if modified:
-                # Enable 'Save' menu item
-                event.file_menu.entryconfigure(4, state=NORMAL)
-                self.notebook.tab(self.current_index, text='*' + self.filenames[self.current_index])
-            else:
-                event.file_menu.entryconfigure(4, state=DISABLED)
-                self.notebook.tab(self.current_index, text=self.filenames[self.current_index])
+            try:
+                current_index = self.notebook.index('current')
+                if modified:
+                    # Enable 'Save' menu item
+                    event.file_menu.entryconfigure(4, state=NORMAL)
+                    # Add asterisk to the header of the tab
+                    self.notebook.tab(current_index,
+                                      text='*'+self.filenames[current_index])
+                    self.save_btn.config(state=NORMAL)
+                else:
+                    # Disable 'Save' menu item
+                    event.file_menu.entryconfigure(4, state=DISABLED)
+                    # If there is asterisk at the header of the tab,
+                    # remove it
+                    self.notebook.tab(current_index,
+                                      text=self.filenames[current_index])
+                    self.save_btn.config(state=DISABLED)
+            except TclError:
+                pass
 
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
@@ -60,11 +74,11 @@ class Application(Frame):
         self.textwidgets = []
 
         self.menubar = Frame(self)
-        self.menubar.config(bg='#444444', bd=0, relief=FLAT)
+        self.menubar.config(bg='#444444', bd=0, relief=FLAT, padx=2)
         self.menubar.pack(side=TOP, fill=X)
 
         self.toolbar = Frame(self)
-        self.toolbar.config(bg='#444444', bd=1, relief=GROOVE, pady=2)
+        self.toolbar.config(bg='#444444', bd=1, relief=GROOVE, pady=6, padx=2)
         self.toolbar.pack(side=TOP, fill=X)
 
         self.style = Style()
@@ -131,10 +145,66 @@ class Application(Frame):
         self.help_menubtn['menu'] = self.help_menu
         self.help_menu.config(activebackground='#647899', bg='#444444')
 
+        self.file_tool_frm = Frame(self.toolbar)
+        self.file_tool_frm.config(bg='#444444', bd=0, relief=FLAT, padx=4)
+        self.file_tool_frm.pack(side=LEFT)
+
+        self.edit_tool_frm = Frame(self.toolbar)
+        self.edit_tool_frm.config(bg='#444444', bd=0, relief=FLAT, padx=12)
+        self.edit_tool_frm.pack(side=LEFT)
+
+        self.new_btn = Button(self.file_tool_frm)
+        self.new_btn.config(text=u'\u2795', font=('Sans', '12'),
+                            fg='#eeeeee', bg='#333333', bd=0,
+                            relief=FLAT, activebackground='#555555',
+                            activeforeground='#ffffff', padx=4, pady=0,
+                            command=self.create_newdoc)
+        self.new_btn.grid(row=0, column=0)
+
+        self.open_btn = Button(self.file_tool_frm)
+        self.open_btn.config(text=u'\u21e9', font=('Sans', '12', 'bold'),
+                             fg='#eeeeee', bg='#333333', bd=0,
+                             relief=FLAT, activebackground='#555555',
+                             activeforeground='#ffffff', padx=4, pady=0,
+                             command=self.open_file)
+        self.open_btn.grid(row=0, column=1, padx=20)
+
+        self.save_btn = Button(self.file_tool_frm)
+        self.save_btn.config(text=u'\u21e7', font=('Sans', '12', 'bold'),
+                             fg='#eeeeee', bg='#333333', bd=0,
+                             relief=FLAT, activebackground='#555555',
+                             activeforeground='#ffffff', padx=4, pady=0,
+                             command=self.save_file)
+        self.save_btn.grid(row=0, column=2, padx=0)
+
+        self.close_btn = Button(self.file_tool_frm)
+        self.close_btn.config(text=u'\u2717', font=('Sans', '12', 'bold'),
+                              fg='#eeeeee', bg='#333333', bd=0,
+                              relief=FLAT, activebackground='#555555',
+                              activeforeground='#ffffff', padx=4, pady=0,
+                              command=self.close_tab)
+        self.close_btn.grid(row=0, column=3, padx=20)
+
+        self.undo_btn = Button(self.edit_tool_frm)
+        self.undo_btn.config(text=u'\u21b6', font=('Sans', '12'),
+                             fg='#eeeeee', bg='#333333', bd=0,
+                             relief=FLAT, activebackground='#555555',
+                             activeforeground='#ffffff', padx=4, pady=0,
+                             command=self.undo)
+        self.undo_btn.grid(row=0, column=0)
+
+        self.redo_btn = Button(self.edit_tool_frm)
+        self.redo_btn.config(text=u'\u21b7', font=('Sans', '12'),
+                             fg='#eeeeee', bg='#333333', bd=0,
+                             relief=FLAT, activebackground='#555555',
+                             activeforeground='#ffffff', padx=4, pady=0,
+                             command=self.redo)
+        self.redo_btn.grid(row=0, column=1, padx=20)
+
         self.quit_btn = Button(self.toolbar)
         self.quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
-                             bg='#444444', activebackground='#647899',
-                             activeforeground='#eeeeee', bd=0,  relief=GROOVE,
+                             bg='#333333', activebackground='#647899',
+                             activeforeground='#ffffff', bd=0,  relief=GROOVE,
                              padx=4, pady=2, command=self.quit_fromapp)
         self.quit_btn.pack(side=RIGHT)
 
@@ -151,12 +221,11 @@ class Application(Frame):
             filename = p.parts[-1]
             try:
                 with open(filepath) as file:
-                    if (self.notebook.index('end')) > 0:
+                    if self.notebook.index('end') > 0:
                         textwidget = self.notebook.focus_get()
                         modified = textwidget.edit_modified()
                         current_index = self.notebook.index('current')
                         self.filepaths[current_index] = filepath
-
                         if (self.filenames[current_index] == 'Untitled' and
                                 not modified):
                             self.filenames[current_index] = filename
@@ -174,7 +243,8 @@ class Application(Frame):
                         tab = self.TextFrameTab(self)
                         tab.text.insert(1.0, file.read())
                         tab.text.edit_modified(arg=False)
-                        self.notebook.tab('current', text=filename)
+                        self.notebook.tab(0, text=filename)
+                        self.filepaths[0] = filepath
             except UnicodeDecodeError:
                 msg = "'{}' has an incorrect type!".format(filename)
                 showerror(message=msg)
@@ -194,49 +264,52 @@ class Application(Frame):
             except TclError:
                 pass
 
-        textwidget = self.focus_lastfor()
-        modified = textwidget.edit_modified()
-        if modified:
-            curr_index = self.notebook.index('current')
-            msg = "'{}' has been modified. Do you want " \
-                  "to save changes?".format(self.filenames[curr_index])
-            msgbox = Message(type=YESNOCANCEL, message=msg, icon=QUESTION)
-            answer = msgbox.show()
-            if answer == YES:
-                self.save_file()
+        if self.notebook.index('end') > 0:
+            textwidget = self.focus_lastfor()
+            modified = textwidget.edit_modified()
+            if modified:
+                curr_index = self.notebook.index('current')
+                msg = "'{}' has been modified. Do you want " \
+                      "to save changes?".format(self.filenames[curr_index])
+                msgbox = Message(type=YESNOCANCEL, message=msg, icon=QUESTION)
+                answer = msgbox.show()
+                if answer == YES:
+                    self.save_file()
+                    close(self)
+                elif answer == NO:
+                    close(self)
+            else:
                 close(self)
-            elif answer == NO:
-                close(self)
-        else:
-            close(self)
 
     def save_file(self):
-        current_index = self.notebook.index('current')
-        if current_index in self.filepaths:
-            textwidget = self.focus_lastfor()
-            text = textwidget.get(1.0, END)
-            with open(self.filepaths[current_index], 'w') as file:
-                file.write(text)
-            self.file_menu.entryconfigure(4, state=DISABLED)
-            textwidget.edit_modified(arg=False)
-        else:
-            self.save_as_file()
+        if self.notebook.index('end') > 0:
+            current_index = self.notebook.index('current')
+            if current_index in self.filepaths:
+                textwidget = self.focus_get()
+                text = textwidget.get(1.0, END)
+                with open(self.filepaths[current_index], 'w') as file:
+                    file.write(text)
+                self.file_menu.entryconfigure(4, state=DISABLED)
+                textwidget.edit_modified(arg=False)
+            else:
+                self.save_as_file()
 
     def save_as_file(self):
-        filepath = asksaveasfilename()
-        if filepath:
-            p = Path(filepath)
-            filename = p.parts[-1]
-            current_index = self.notebook.index('current')
-            self.filepaths[current_index] = filepath
-            self.notebook.tab('current', text=filename)
-            self.filenames[current_index] = filename
-            textwidget = self.focus_lastfor()
-            text = textwidget.get(1.0, END)
-            with open(filepath, 'w') as file:
-                file.write(text)
-            self.file_menu.entryconfigure(4, state=DISABLED)
-            textwidget.edit_modified(arg=False)
+        if self.notebook.index('end') > 0:
+            filepath = asksaveasfilename()
+            if filepath:
+                p = Path(filepath)
+                filename = p.parts[-1]
+                current_index = self.notebook.index('current')
+                self.filepaths[current_index] = filepath
+                self.notebook.tab('current', text=filename)
+                self.filenames[current_index] = filename
+                textwidget = self.focus_get()
+                text = textwidget.get(1.0, END)
+                with open(filepath, 'w') as file:
+                    file.write(text)
+                self.file_menu.entryconfigure(4, state=DISABLED)
+                textwidget.edit_modified(arg=False)
 
     def undo(self):
         textwidget = self.focus_lastfor()
