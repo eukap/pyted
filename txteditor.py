@@ -86,16 +86,16 @@ class Application(Frame):
         self.notebook.enable_traversal()
         self.notebook.pack(side=TOP, expand=YES, fill=BOTH)
 
-        self.file_menubtn = Menubutton(self.menubar)
-        self.file_menubtn.config(text='File', bg='#444444', fg='#eeeeee',
-                                 activeforeground='#eeeeee',
-                                 activebackground='#647899', underline=0)
-        self.file_menubtn.pack(side=LEFT)
-        self.file_menu = Menu(self.file_menubtn, tearoff=0)
-        self.file_menubtn['menu'] = self.file_menu
+        self.file_menu_btn = Menubutton(self.menubar)
+        self.file_menu_btn.config(text='File', bg='#444444', fg='#eeeeee',
+                                  activeforeground='#eeeeee',
+                                  activebackground='#647899', underline=0)
+        self.file_menu_btn.pack(side=LEFT)
+        self.file_menu = Menu(self.file_menu_btn, tearoff=0)
+        self.file_menu_btn['menu'] = self.file_menu
         self.file_menu.config(fg='#eeeeee', activeforeground='#eeeeee',
                               bg='#444444', activebackground='#647899')
-        self.file_menu.add_command(label='New', command=self.create_newdoc)
+        self.file_menu.add_command(label='New', command=self.create_new_doc)
         self.file_menu.add_command(label='Open', command=self.open_file)
         self.file_menu.add_command(label='Close', command=self.close_tab)
         self.file_menu.add_separator()
@@ -103,15 +103,15 @@ class Application(Frame):
         self.file_menu.add_command(label='Save As',
                                    command=self.save_as_file)
         self.file_menu.add_separator()
-        self.file_menu.add_command(label='Exit', command=self.quit_fromapp)
+        self.file_menu.add_command(label='Exit', command=self.quit_from_app)
 
-        self.edit_menubtn = Menubutton(self.menubar)
-        self.edit_menubtn.config(text='Edit', fg='#eeeeee', bg='#444444',
-                                 activebackground='#647899',
-                                 activeforeground='#eeeeee', underline=0)
-        self.edit_menubtn.pack(side=LEFT)
-        self.edit_menu = Menu(self.edit_menubtn, tearoff=0)
-        self.edit_menubtn['menu'] = self.edit_menu
+        self.edit_menu_btn = Menubutton(self.menubar)
+        self.edit_menu_btn.config(text='Edit', fg='#eeeeee', bg='#444444',
+                                  activebackground='#647899',
+                                  activeforeground='#eeeeee', underline=0)
+        self.edit_menu_btn.pack(side=LEFT)
+        self.edit_menu = Menu(self.edit_menu_btn, tearoff=0)
+        self.edit_menu_btn['menu'] = self.edit_menu
         self.edit_menu.config(fg='#eeeeee', activeforeground='#eeeeee',
                               bg='#444444', activebackground='#647899')
         self.edit_menu.add_command(label='Undo', command=self.undo)
@@ -125,22 +125,13 @@ class Application(Frame):
         self.edit_menu.add_command(label='Select All',
                                    command=self.select_all)
 
-        self.view_menubtn = Menubutton(self.menubar)
-        self.view_menubtn.config(text='View', fg='#eeeeee', bg='#444444',
-                                 activeforeground='#eeeeee',
-                                 activebackground='#647899', underline=0)
-        self.view_menubtn.pack(side=LEFT)
-        self.view_menu = Menu(self.view_menubtn, tearoff=0)
-        self.view_menubtn['menu'] = self.view_menu
-        self.view_menu.config(activebackground='#647899', bg='#444444')
-
-        self.help_menubtn = Menubutton(self.menubar)
-        self.help_menubtn.config(text='Help', fg='#eeeeee', bg='#444444',
-                                 activeforeground='#eeeeee',
-                                 activebackground='#647899', underline=0)
-        self.help_menubtn.pack(side=LEFT)
-        self.help_menu = Menu(self.help_menubtn, tearoff=0)
-        self.help_menubtn['menu'] = self.help_menu
+        self.help_menu_btn = Menubutton(self.menubar)
+        self.help_menu_btn.config(text='Help', fg='#eeeeee', bg='#444444',
+                                  activeforeground='#eeeeee',
+                                  activebackground='#647899', underline=0)
+        self.help_menu_btn.pack(side=LEFT)
+        self.help_menu = Menu(self.help_menu_btn, tearoff=0)
+        self.help_menu_btn['menu'] = self.help_menu
         self.help_menu.config(activebackground='#647899', bg='#444444')
 
         self.file_tool_frm = Frame(self.toolbar)
@@ -151,13 +142,22 @@ class Application(Frame):
         self.edit_tool_frm.config(bg='#444444', bd=0, relief=FLAT, padx=12)
         self.edit_tool_frm.pack(side=LEFT)
 
+        self.hint_lbl = Label(self.toolbar)
+        self.hint_lbl.config(bg='#444444', fg='#eeeeee',
+                             font=('Sans', '10', 'italic'),
+                             bd=0, relief=FLAT, padx=12)
+        self.hint_lbl.pack(side=LEFT)
+
         self.new_btn = Button(self.file_tool_frm)
         self.new_btn.config(text=u'\u2795', font=('Sans', '12'),
                             fg='#eeeeee', bg='#333333', bd=0,
                             relief=FLAT, activebackground='#555555',
                             activeforeground='#ffffff', padx=4, pady=0,
-                            command=self.create_newdoc)
+                            command=self.create_new_doc)
         self.new_btn.grid(row=0, column=0)
+        self.new_btn.bind('<Enter>',
+                          lambda x: self.hint_lbl.config(text='New'))
+        self.new_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.open_btn = Button(self.file_tool_frm)
         self.open_btn.config(text=u'\u21e9', font=('Sans', '12', 'bold'),
@@ -166,14 +166,20 @@ class Application(Frame):
                              activeforeground='#ffffff', padx=4, pady=0,
                              command=self.open_file)
         self.open_btn.grid(row=0, column=1, padx=20)
+        self.open_btn.bind('<Enter>',
+                           lambda x: self.hint_lbl.config(text='Open'))
+        self.open_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.save_btn = Button(self.file_tool_frm)
         self.save_btn.config(text=u'\u21e7', font=('Sans', '12', 'bold'),
                              fg='#eeeeee', bg='#333333', bd=0,
                              relief=FLAT, activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
-                             command=self.save_file)
+                             state=DISABLED, command=self.save_file)
         self.save_btn.grid(row=0, column=2, padx=0)
+        self.save_btn.bind('<Enter>',
+                           lambda x: self.hint_lbl.config(text='Save'))
+        self.save_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.close_btn = Button(self.file_tool_frm)
         self.close_btn.config(text=u'\u2717', font=('Sans', '12', 'bold'),
@@ -182,6 +188,9 @@ class Application(Frame):
                               activeforeground='#ffffff', padx=4, pady=0,
                               command=self.close_tab)
         self.close_btn.grid(row=0, column=3, padx=20)
+        self.close_btn.bind('<Enter>',
+                            lambda x: self.hint_lbl.config(text='Close'))
+        self.close_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.undo_btn = Button(self.edit_tool_frm)
         self.undo_btn.config(text=u'\u21b6', font=('Sans', '12'),
@@ -190,6 +199,9 @@ class Application(Frame):
                              activeforeground='#ffffff', padx=4, pady=0,
                              command=self.undo)
         self.undo_btn.grid(row=0, column=0)
+        self.undo_btn.bind('<Enter>',
+                           lambda x: self.hint_lbl.config(text='Undo'))
+        self.undo_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.redo_btn = Button(self.edit_tool_frm)
         self.redo_btn.config(text=u'\u21b7', font=('Sans', '12'),
@@ -198,22 +210,25 @@ class Application(Frame):
                              activeforeground='#ffffff', padx=4, pady=0,
                              command=self.redo)
         self.redo_btn.grid(row=0, column=1, padx=20)
+        self.redo_btn.bind('<Enter>',
+                           lambda x: self.hint_lbl.config(text='Redo'))
+        self.redo_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.quit_btn = Button(self.toolbar)
         self.quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
                              bg='#333333', activebackground='#647899',
                              activeforeground='#ffffff', bd=0,  relief=GROOVE,
-                             padx=4, pady=2, command=self.quit_fromapp)
+                             padx=4, pady=2, command=self.quit_from_app)
         self.quit_btn.pack(side=RIGHT)
 
         self.TextFrameTab(self)
 
-    def create_newdoc(self):
+    def create_new_doc(self):
         self.filenames.append('Untitled')
         self.TextFrameTab(self)
 
     def open_file(self):
-        filepath = askopenfilename(filetypes=(("All files", "*"), ))
+        filepath = askopenfilename(filetypes=(('All files', '*'), ))
         if filepath:
             p = Path(filepath)
             filename = p.parts[-1]
@@ -247,7 +262,7 @@ class Application(Frame):
                 msg = "'{}' has an incorrect type!".format(filename)
                 showerror(message=msg)
                 self.close_tab()
-                self.create_newdoc()
+                self.create_new_doc()
 
     def close_tab(self):
         def close(obj):
@@ -361,7 +376,7 @@ class Application(Frame):
         textwidget = self.focus_lastfor()
         textwidget.tag_add(SEL, 1.0, END)
 
-    def quit_fromapp(self):
+    def quit_from_app(self):
         modified = False
         for widget in self.textwidgets:
             if widget.edit_modified():
@@ -384,7 +399,7 @@ def main():
     root.geometry('650x500')
     frame = Application(root)
     frame.pack(side=TOP, expand=YES, fill=BOTH)
-    root.protocol("WM_DELETE_WINDOW", frame.quit_fromapp)
+    root.protocol('WM_DELETE_WINDOW', frame.quit_from_app)
     root.mainloop()
 
 
