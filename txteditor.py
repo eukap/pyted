@@ -35,11 +35,9 @@ class Application(Frame):
             # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
 
-            self.text.bind('<FocusIn>', self.check_state)
-            self.text.bind('<FocusOut>', self.check_state)
-            self.text.bind('<Any-Key>', self.check_state)
-            self.text.bind('<Any-KeyRelease>', self.check_state)
-            self.save_btn.bind('<Motion>', self.check_state)
+            obj.bind_all('<Any-KeyPress>', self.check_state)
+            obj.bind_all('<Any-KeyRelease>', self.check_state)
+            obj.bind_all('<Any-ButtonRelease>', self.check_state)
 
         def check_state(self, event):
             event.file_menu = self.file_menu
