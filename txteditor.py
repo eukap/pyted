@@ -132,7 +132,9 @@ class Application(Frame):
         self.help_menu_btn.pack(side=LEFT)
         self.help_menu = Menu(self.help_menu_btn, tearoff=0)
         self.help_menu_btn['menu'] = self.help_menu
-        self.help_menu.config(activebackground='#647899', bg='#444444')
+        self.help_menu.config(fg='#eeeeee', activeforeground='#eeeeee',
+                              bg='#444444', activebackground='#647899')
+        self.help_menu.add_command(label='About', command=self.show_about)
 
         self.file_tool_frm = Frame(self.toolbar)
         self.file_tool_frm.config(bg='#444444', bd=0, relief=FLAT, padx=4)
@@ -149,7 +151,7 @@ class Application(Frame):
         self.hint_lbl.pack(side=LEFT)
 
         self.new_btn = Button(self.file_tool_frm)
-        self.new_btn.config(text=u'\u2795', font=('Sans', '12'),
+        self.new_btn.config(text='\u2795', font=('Sans', '12'),
                             fg='#eeeeee', bg='#333333', bd=0,
                             relief=FLAT, activebackground='#555555',
                             activeforeground='#ffffff', padx=4, pady=0,
@@ -160,7 +162,7 @@ class Application(Frame):
         self.new_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.open_btn = Button(self.file_tool_frm)
-        self.open_btn.config(text=u'\u21e9', font=('Sans', '12', 'bold'),
+        self.open_btn.config(text='\u21e9', font=('Sans', '12', 'bold'),
                              fg='#eeeeee', bg='#333333', bd=0,
                              relief=FLAT, activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
@@ -171,7 +173,7 @@ class Application(Frame):
         self.open_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.save_btn = Button(self.file_tool_frm)
-        self.save_btn.config(text=u'\u21e7', font=('Sans', '12', 'bold'),
+        self.save_btn.config(text='\u21e7', font=('Sans', '12', 'bold'),
                              fg='#eeeeee', bg='#333333', bd=0,
                              relief=FLAT, activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
@@ -182,7 +184,7 @@ class Application(Frame):
         self.save_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.close_btn = Button(self.file_tool_frm)
-        self.close_btn.config(text=u'\u2717', font=('Sans', '12', 'bold'),
+        self.close_btn.config(text='\u2717', font=('Sans', '12', 'bold'),
                               fg='#eeeeee', bg='#333333', bd=0,
                               relief=FLAT, activebackground='#555555',
                               activeforeground='#ffffff', padx=4, pady=0,
@@ -193,7 +195,7 @@ class Application(Frame):
         self.close_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.undo_btn = Button(self.edit_tool_frm)
-        self.undo_btn.config(text=u'\u21b6', font=('Sans', '12'),
+        self.undo_btn.config(text='\u21b6', font=('Sans', '12'),
                              fg='#eeeeee', bg='#333333', bd=0,
                              relief=FLAT, activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
@@ -204,7 +206,7 @@ class Application(Frame):
         self.undo_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
 
         self.redo_btn = Button(self.edit_tool_frm)
-        self.redo_btn.config(text=u'\u21b7', font=('Sans', '12'),
+        self.redo_btn.config(text='\u21b7', font=('Sans', '12'),
                              fg='#eeeeee', bg='#333333', bd=0,
                              relief=FLAT, activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
@@ -259,7 +261,7 @@ class Application(Frame):
                         self.notebook.tab(0, text=filename)
                         self.filepaths[0] = filepath
             except UnicodeDecodeError:
-                msg = "'{}' has an incorrect type!".format(filename)
+                msg = "Unknown encoding!".format(filename)
                 showerror(message=msg)
                 self.close_tab()
                 self.create_new_doc()
@@ -375,6 +377,16 @@ class Application(Frame):
     def select_all(self):
         textwidget = self.focus_lastfor()
         textwidget.tag_add(SEL, 1.0, END)
+
+    @staticmethod
+    def show_about():
+        msg = " " * 12 + "PyTEd 0.1.0\n\n" \
+              "PyTEd is a simple text editor based " \
+              "on the tkinter interface\n\n" \
+              "Copyright " + '\u00a9' + " 2019 Eugene Kapshuk\n\n" \
+              "Source code: https://github.com/eukap/pyted\n\n" \
+              "License: MIT"
+        showinfo(title='About PyTEd', message=msg)
 
     def quit_from_app(self):
         modified = False
