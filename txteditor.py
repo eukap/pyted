@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter.messagebox import *
 from tkinter.ttk import Notebook, Style
 from pathlib import Path
+import webbrowser
 
 
 class Application(Frame):
@@ -378,15 +379,72 @@ class Application(Frame):
         textwidget = self.focus_lastfor()
         textwidget.tag_add(SEL, 1.0, END)
 
-    @staticmethod
-    def show_about():
-        msg = " " * 12 + "PyTEd 0.1.0\n\n" \
-              "PyTEd is a simple text editor based " \
-              "on the tkinter interface\n\n" \
-              "Copyright " + '\u00a9' + " 2019 Eugene Kapshuk\n\n" \
-              "Source code: https://github.com/eukap/pyted\n\n" \
-              "License: MIT"
-        showinfo(title='About PyTEd', message=msg)
+    def show_about(self):
+        txt_0 = "PyTEd 0.1.0"
+        txt_1 = "PyTEd is a simple text editor based\n" \
+                "on the tkinter interface"
+        txt_2 = "Copyright " + '\u00a9' + " 2019 Eugene Kapshuk"
+        txt_3 = "Source code: "
+        txt_4 = "https://github.com/eukap/pyted"
+        txt_5 = "License: MIT"
+        window = Toplevel()
+        window.title('About PyTEd')
+        window.geometry('350x280')
+        window.transient(self)
+        window.resizable(width=False, height=False)
+
+        label_0 = Label(window)
+        label_0.config(fg='#000000', bg='#ddddd8', text=txt_0,
+                       font=('Sans', '12', 'bold'),
+                       justify=CENTER, pady=10)
+        label_0.pack(side=TOP, fill=X)
+
+        label_1 = Label(window)
+        label_1.config(fg='#000000', bg='#ddddd8', text=txt_1,
+                       font=('Sans', '11', 'normal'),
+                       justify=CENTER, pady=10)
+        label_1.pack(side=TOP, fill=X)
+
+        label_2 = Label(window)
+        label_2.config(fg='#000000', bg='#ddddd8', text=txt_2,
+                       font=('Sans', '11', 'normal'),
+                       justify=CENTER, pady=10)
+        label_2.pack(side=TOP, fill=X)
+
+        frame_0 = Frame(window)
+        frame_0.config(bg='#ddddd8', bd=0, relief=FLAT, padx=2, pady=2)
+        frame_0.pack(side=TOP, fill=X)
+
+        label_3 = Label(frame_0)
+        label_3.config(fg='#000000', bg='#ddddd8', text=txt_3,
+                       font=('Sans', '11', 'normal'),
+                       justify=CENTER, padx=2, pady=10)
+        label_3.pack(side=LEFT, fill=X)
+
+        label_4 = Label(frame_0)
+        label_4.config(fg='#1111cc', bg='#ddddd8', text=txt_4,
+                       font=('Sans', '11', 'normal'), cursor='hand1',
+                       justify=CENTER, padx=4, pady=0)
+        label_4.pack(side=LEFT, fill=X)
+        label_4.bind('<Button-1>', lambda x: webbrowser.open_new_tab(
+            'https://github.com/eukap/pyted'))
+
+        label_5 = Label(window)
+        label_5.config(fg='#000000', bg='#ddddd8', text=txt_5,
+                       font=('Sans', '11', 'normal'),
+                       justify=CENTER, pady=8)
+        label_5.pack(side=TOP, fill=X)
+
+        frame_1 = Frame(window)
+        frame_1.config(bg='#ddddd8', bd=0, relief=FLAT, padx=0, pady=12)
+        frame_1.pack(side=BOTTOM, fill=BOTH, expand=YES)
+
+        about_btn = Button(frame_1)
+        about_btn.config(text='Close', fg='#000000', bg='#efefef',
+                         activeforeground='#000000',
+                         activebackground='#e9e9e9',
+                         font=('Sans', '10', 'normal'), command=window.destroy)
+        about_btn.pack(side=TOP)
 
     def quit_from_app(self):
         modified = False
