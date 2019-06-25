@@ -439,12 +439,12 @@ class Application(Frame):
         frame_1.config(bg='#ddddd8', bd=0, relief=FLAT, padx=0, pady=12)
         frame_1.pack(side=BOTTOM, fill=BOTH, expand=YES)
 
-        about_btn = Button(frame_1)
-        about_btn.config(text='Close', fg='#000000', bg='#efefef',
-                         activeforeground='#000000',
-                         activebackground='#e9e9e9',
-                         font=('Sans', '10', 'normal'), command=window.destroy)
-        about_btn.pack(side=TOP)
+        btn = Button(frame_1)
+        btn.config(text='Close', fg='#000000', bg='#efefef',
+                   activeforeground='#000000',
+                   activebackground='#e9e9e9',
+                   font=('Sans', '10', 'normal'), command=window.destroy)
+        btn.pack(side=TOP)
 
     def quit_from_app(self):
         modified = False
