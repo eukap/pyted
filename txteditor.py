@@ -39,22 +39,22 @@ class Application(Frame):
             obj.bind_all('<Any-KeyPress>', self.check_state)
             obj.bind_all('<Any-KeyRelease>', self.check_state)
             obj.bind_all('<Any-ButtonRelease>', self.check_state)
+            self.text.bind('<FocusIn>', self.check_state)
 
         def check_state(self, event):
-            event.file_menu = self.file_menu
             modified = self.text.edit_modified()
             try:
                 current_index = self.notebook.index('current')
                 if modified:
                     # Enable 'Save' menu item
-                    event.file_menu.entryconfigure(4, state=NORMAL)
+                    self.file_menu.entryconfigure(4, state=NORMAL)
                     # Add asterisk to the header of the tab
                     self.notebook.tab(current_index,
-                                      text='*'+self.filenames[current_index])
+                                      text='*' + self.filenames[current_index])
                     self.save_btn.config(state=NORMAL)
                 else:
                     # Disable 'Save' menu item
-                    event.file_menu.entryconfigure(4, state=DISABLED)
+                    self.file_menu.entryconfigure(4, state=DISABLED)
                     # If there is asterisk at the header of the tab,
                     # remove it
                     self.notebook.tab(current_index,
@@ -96,15 +96,20 @@ class Application(Frame):
         self.file_menu_btn['menu'] = self.file_menu
         self.file_menu.config(fg='#eeeeee', activeforeground='#eeeeee',
                               bg='#444444', activebackground='#647899')
-        self.file_menu.add_command(label='New', command=self.create_new_doc)
-        self.file_menu.add_command(label='Open', command=self.open_file)
-        self.file_menu.add_command(label='Close', command=self.close_tab)
+        self.file_menu.add_command(label='New', command=self.create_new_doc,
+                                   accelerator=' ' * 14 + 'Ctrl+N')
+        self.file_menu.add_command(label='Open', command=self.open_file,
+                                   accelerator=' ' * 14 + 'Ctrl+O')
+        self.file_menu.add_command(label='Close', command=self.close_tab,
+                                   accelerator=' ' * 14 + 'Ctrl+W')
         self.file_menu.add_separator()
-        self.file_menu.add_command(label='Save', command=self.save_file)
-        self.file_menu.add_command(label='Save As',
-                                   command=self.save_as_file)
+        self.file_menu.add_command(label='Save', command=self.save_file,
+                                   accelerator=' ' * 14 + 'Ctrl+S')
+        self.file_menu.add_command(label='Save As', command=self.save_as_file,
+                                   accelerator='    Ctrl+Shift+S')
         self.file_menu.add_separator()
-        self.file_menu.add_command(label='Exit', command=self.quit_from_app)
+        self.file_menu.add_command(label='Exit', command=self.quit_from_app,
+                                   accelerator=' ' * 14 + 'Ctrl+Q')
 
         self.edit_menu_btn = Menubutton(self.menubar)
         self.edit_menu_btn.config(text='Edit', fg='#eeeeee', bg='#444444',
@@ -115,16 +120,21 @@ class Application(Frame):
         self.edit_menu_btn['menu'] = self.edit_menu
         self.edit_menu.config(fg='#eeeeee', activeforeground='#eeeeee',
                               bg='#444444', activebackground='#647899')
-        self.edit_menu.add_command(label='Undo', command=self.undo)
-        self.edit_menu.add_command(label='Redo', command=self.redo)
+        self.edit_menu.add_command(label='Undo', command=self.undo,
+                                   accelerator=' ' * 10 + 'Ctrl+Z')
+        self.edit_menu.add_command(label='Redo', command=self.redo,
+                                   accelerator='Ctrl+Shift+Z')
         self.edit_menu.add_separator()
-        self.edit_menu.add_command(label='Cut', command=self.cut_text)
-        self.edit_menu.add_command(label='Copy', command=self.copy_text)
-        self.edit_menu.add_command(label='Paste', command=self.paste_text)
+        self.edit_menu.add_command(label='Cut', command=self.cut_text,
+                                   accelerator=' ' * 10 + 'Ctrl+X')
+        self.edit_menu.add_command(label='Copy', command=self.copy_text,
+                                   accelerator=' ' * 10 + 'Ctrl+C')
+        self.edit_menu.add_command(label='Paste', command=self.paste_text,
+                                   accelerator=' ' * 10 + 'Ctrl+V')
         self.edit_menu.add_command(label='Delete', command=self.del_text)
         self.edit_menu.add_separator()
-        self.edit_menu.add_command(label='Select All',
-                                   command=self.select_all)
+        self.edit_menu.add_command(label='Select All', command=self.select_all,
+                                   accelerator=' ' * 10 + 'Ctrl+A')
 
         self.help_menu_btn = Menubutton(self.menubar)
         self.help_menu_btn.config(text='Help', fg='#eeeeee', bg='#444444',
@@ -226,11 +236,27 @@ class Application(Frame):
 
         self.TextFrameTab(self)
 
-    def create_new_doc(self):
+        # Event bindings for the keyboard shortcuts
+        self.bind_all('<Control-n>', self.create_new_doc)
+        self.bind_all('<Control-o>', self.open_file)
+        self.bind_all('<Control-w>', self.close_tab)
+        self.bind_all('<Control-s>', self.save_file)
+        self.bind_all('<Control-Shift-S>', self.save_as_file)
+        self.bind_all('<Control-q>', self.quit_from_app)
+        self.bind_all('<Control-a>', self.select_all)
+        self.bind_all('<Control-z>', self.undo)
+        self.bind_all('<Control-Shift-Z>', self.redo)
+
+    def create_new_doc(self, *args):
+        # args is the '<Control-n>' probable event
         self.filenames.append('Untitled')
         self.TextFrameTab(self)
 
-    def open_file(self):
+    def open_file(self, *args):
+        # If there is the '<Control-o>' event
+        if args:
+            textwidget = self.notebook.focus_get()
+            textwidget.edit_modified(arg=False)
         filepath = askopenfilename(filetypes=(('All files', '*'), ))
         if filepath:
             p = Path(filepath)
@@ -267,7 +293,8 @@ class Application(Frame):
                 self.close_tab()
                 self.create_new_doc()
 
-    def close_tab(self):
+    def close_tab(self, *args):
+        # args is the '<Control-w>' probable event
         def close(obj):
             try:
                 current_index = self.notebook.index('current')
@@ -297,7 +324,8 @@ class Application(Frame):
             else:
                 close(self)
 
-    def save_file(self):
+    def save_file(self, *args):
+        # args is the '<Control-s>' probable event
         if self.notebook.index('end') > 0:
             current_index = self.notebook.index('current')
             if current_index in self.filepaths:
@@ -310,7 +338,8 @@ class Application(Frame):
             else:
                 self.save_as_file()
 
-    def save_as_file(self):
+    def save_as_file(self, *args):
+        # args is the '<Control-Shift-S>' probable event
         if self.notebook.index('end') > 0:
             filepath = asksaveasfilename()
             if filepath:
@@ -327,23 +356,32 @@ class Application(Frame):
                 self.file_menu.entryconfigure(4, state=DISABLED)
                 textwidget.edit_modified(arg=False)
 
-    def undo(self):
-        textwidget = self.focus_lastfor()
+    def undo(self, *args):
+        # args is the '<Control-z>' probable event
         try:
+            textwidget = self.focus_lastfor()
+            # '<Control-z>' should work independently of a specific OS
+            if args:
+                textwidget.edit_redo()
             textwidget.edit_undo()
         except TclError:
             pass
 
-    def redo(self):
-        textwidget = self.focus_lastfor()
+    def redo(self, *args):
+        # args is the '<Control-Shift-Z>' probable event
         try:
+            textwidget = self.focus_lastfor()
+            # '<Control-Shift-Z>' should work independently
+            # of a specific OS
+            if args:
+                textwidget.edit_undo()
             textwidget.edit_redo()
         except TclError:
             pass
 
     def cut_text(self):
-        textwidget = self.focus_lastfor()
         try:
+            textwidget = self.focus_lastfor()
             text = textwidget.get(SEL_FIRST, SEL_LAST)
             textwidget.delete(SEL_FIRST, SEL_LAST)
             textwidget.clipboard_clear()
@@ -352,8 +390,8 @@ class Application(Frame):
             pass
 
     def copy_text(self):
-        textwidget = self.focus_lastfor()
         try:
+            textwidget = self.focus_lastfor()
             text = textwidget.get(SEL_FIRST, SEL_LAST)
             textwidget.clipboard_clear()
             textwidget.clipboard_append(text)
@@ -361,21 +399,22 @@ class Application(Frame):
             pass
 
     def paste_text(self):
-        textwidget = self.focus_lastfor()
         try:
+            textwidget = self.focus_lastfor()
             text = textwidget.selection_get(selection='CLIPBOARD')
             textwidget.insert(INSERT, text)
         except TclError:
             pass
 
     def del_text(self):
-        textwidget = self.focus_lastfor()
         try:
+            textwidget = self.focus_lastfor()
             textwidget.delete(SEL_FIRST, SEL_LAST)
         except TclError:
             pass
 
-    def select_all(self):
+    def select_all(self, *args):
+        # args is the '<Control-a>' probable event
         textwidget = self.focus_lastfor()
         textwidget.tag_add(SEL, 1.0, END)
 
@@ -446,7 +485,8 @@ class Application(Frame):
                    font=('Sans', '10', 'normal'), command=window.destroy)
         btn.pack(side=TOP)
 
-    def quit_from_app(self):
+    def quit_from_app(self, *args):
+        # args is the '<Control-q>' probable event
         modified = False
         for widget in self.textwidgets:
             if widget.edit_modified():
