@@ -244,8 +244,6 @@ class Application(Frame):
         self.bind_all('<Control-Shift-S>', self.save_as_file)
         self.bind_all('<Control-q>', self.quit_from_app)
         self.bind_all('<Control-a>', self.select_all)
-        self.bind_all('<Control-z>', self.undo)
-        self.bind_all('<Control-Shift-Z>', self.redo)
 
     def create_new_doc(self, *args):
         # args is the '<Control-n>' probable event
@@ -357,24 +355,15 @@ class Application(Frame):
                 textwidget.edit_modified(arg=False)
 
     def undo(self, *args):
-        # args is the '<Control-z>' probable event
         try:
             textwidget = self.focus_lastfor()
-            # '<Control-z>' should work independently of a specific OS
-            if args:
-                textwidget.edit_redo()
             textwidget.edit_undo()
         except TclError:
             pass
 
     def redo(self, *args):
-        # args is the '<Control-Shift-Z>' probable event
         try:
             textwidget = self.focus_lastfor()
-            # '<Control-Shift-Z>' should work independently
-            # of a specific OS
-            if args:
-                textwidget.edit_undo()
             textwidget.edit_redo()
         except TclError:
             pass
