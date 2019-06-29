@@ -38,11 +38,7 @@ class Application(Frame):
             # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
 
-            self.text.bind('<Any-KeyPress>', self.check_state)
-            self.text.bind('<Any-KeyRelease>', self.check_state)
-            self.text.bind('<Any-ButtonRelease>', self.check_state)
-            self.text.bind('<FocusIn>', self.check_state)
-            self.text.bind('<FocusOut>', self.check_state)
+            self.text.bind('<<StateChecking>>', self.check_state)
 
         def check_state(self, event):
             modified = self.text.edit_modified()
@@ -258,7 +254,7 @@ class Application(Frame):
                                   font=('Sans', '11', 'italic'), padx=0)
         self.statusbar_lbl.pack(side=RIGHT)
 
-        # Event bindings for the keyboard shortcuts
+        # Create event bindings for keyboard shortcuts
         self.bind_all('<Control-n>', self.create_new_doc)
         self.bind_all('<Control-o>', self.open_file)
         self.bind_all('<Control-w>', self.close_tab)
@@ -268,6 +264,11 @@ class Application(Frame):
         self.bind_all('<Control-a>', self.select_all)
         if sys.platform.startswith('win32'):
             self.bind_all('<Control-Shift-Z>', self.redo)
+
+        # Create the '<<StateChecking>>' virtual event
+        self.event_add('<<StateChecking>>', '<Any-KeyPress>',
+                       '<Any-KeyRelease>', '<Any-ButtonRelease>',
+                       '<FocusIn>', '<FocusOut>')
 
     def save_btn_handler(self, event):
         try:
@@ -287,14 +288,14 @@ class Application(Frame):
         except TclError:
             pass
 
-    def create_new_doc(self, *args):
-        # args is the '<Control-n>' probable event
+    def create_new_doc(self, *event):
+        # event is the '<Control-n>' probable event
         self.filenames.append('Untitled')
         self.TextFrameTab(self)
 
-    def open_file(self, *args):
+    def open_file(self, *event):
         # If there is the '<Control-o>' event
-        if args:
+        if event:
             textwidget = self.focus_lastfor()
             textwidget.edit_modified(arg=False)
         filepath = askopenfilename(filetypes=(('All files', '*'), ))
@@ -334,8 +335,8 @@ class Application(Frame):
                 self.close_tab()
                 self.create_new_doc()
 
-    def close_tab(self, *args):
-        # args is the '<Control-w>' probable event
+    def close_tab(self, *event):
+        # event is the '<Control-w>' probable event
         def close(obj):
             try:
                 current_index = self.notebook.index('current')
@@ -366,8 +367,8 @@ class Application(Frame):
             else:
                 close(self)
 
-    def save_file(self, *args):
-        # args is the '<Control-s>' probable event
+    def save_file(self, *event):
+        # event is the '<Control-s>' probable event
         if self.notebook.index('end') > 0:
             current_index = self.notebook.index('current')
             if current_index in self.filepaths:
@@ -380,8 +381,8 @@ class Application(Frame):
             else:
                 self.save_as_file()
 
-    def save_as_file(self, *args):
-        # args is the '<Control-Shift-S>' probable event
+    def save_as_file(self, *event):
+        # event is the '<Control-Shift-S>' probable event
         if self.notebook.index('end') > 0:
             filepath = asksaveasfilename()
             if filepath:
@@ -405,8 +406,8 @@ class Application(Frame):
         except TclError:
             pass
 
-    def redo(self, *args):
-        # args is the '<Control-Shift-Z>' probable event for Windows
+    def redo(self, *event):
+        # event is the '<Control-Shift-Z>' probable event for Windows
         try:
             textwidget = self.focus_lastfor()
             textwidget.edit_redo()
@@ -447,8 +448,8 @@ class Application(Frame):
         except TclError:
             pass
 
-    def select_all(self, *args):
-        # args is the '<Control-a>' probable event
+    def select_all(self, *event):
+        # event is the '<Control-a>' probable event
         textwidget = self.focus_lastfor()
         textwidget.tag_add(SEL, 1.0, END)
 
@@ -519,8 +520,8 @@ class Application(Frame):
                    font=('Sans', '10', 'normal'), command=window.destroy)
         btn.pack(side=TOP)
 
-    def quit_from_app(self, *args):
-        # args is the '<Control-q>' probable event
+    def quit_from_app(self, *event):
+        # event is the '<Control-q>' probable event
         modified = False
         for widget in self.textwidgets:
             if widget.edit_modified():
