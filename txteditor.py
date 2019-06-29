@@ -18,7 +18,8 @@ class Application(Frame):
             self.text.focus()
             self.yscroll = Scrollbar(self.text_frm, orient=VERTICAL)
             self.yscroll.config(cursor='arrow', command=self.text.yview,
-                                bg='#5d5d5d', activebackground='#6e6e6e')
+                                bg='#777777', activebackground='#6d6d6d',
+                                troughcolor='#c2c2c2')
             self.text['yscrollcommand'] = self.yscroll.set
             self.yscroll.pack(side=RIGHT, fill=Y)
             self.text.pack(side=LEFT, expand=YES, fill=BOTH)
@@ -36,10 +37,11 @@ class Application(Frame):
             # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
 
-            obj.bind_all('<Any-KeyPress>', self.check_state)
-            obj.bind_all('<Any-KeyRelease>', self.check_state)
-            obj.bind_all('<Any-ButtonRelease>', self.check_state)
+            self.text.bind('<Any-KeyPress>', self.check_state)
+            self.text.bind('<Any-KeyRelease>', self.check_state)
+            self.text.bind('<Any-ButtonRelease>', self.check_state)
             self.text.bind('<FocusIn>', self.check_state)
+            self.text.bind('<FocusOut>', self.check_state)
 
         def check_state(self, event):
             modified = self.text.edit_modified()
@@ -79,6 +81,10 @@ class Application(Frame):
         self.toolbar = Frame(self)
         self.toolbar.config(bg='#444444', bd=1, relief=GROOVE, pady=6, padx=2)
         self.toolbar.pack(side=TOP, fill=X)
+
+        self.statusbar = Frame(self)
+        self.statusbar.config(bg='#222222', bd=0, relief=FLAT, padx=20)
+        self.statusbar.pack(side=BOTTOM, fill=X)
 
         self.style = Style()
         self.style.configure('TNotebook', background='#606060')
@@ -193,6 +199,7 @@ class Application(Frame):
         self.save_btn.bind('<Enter>',
                            lambda x: self.hint_lbl.config(text='Save'))
         self.save_btn.bind('<Leave>', lambda x: self.hint_lbl.config(text=''))
+        self.save_btn.bind('<Motion>', self.save_btn_handler)
 
         self.close_btn = Button(self.file_tool_frm)
         self.close_btn.config(text='\u2717', font=('Sans', '12', 'bold'),
@@ -236,6 +243,20 @@ class Application(Frame):
 
         self.TextFrameTab(self)
 
+        self.statusbar_lbl = Label(self.statusbar)
+        self.statusbar_lbl.config(text='column:', fg='#ffffff', bg='#222222',
+                                  activeforeground='#ffffff',
+                                  activebackground='#222222', bd=0,
+                                  font=('Sans', '11', 'italic'), padx=40)
+        self.statusbar_lbl.pack(side=RIGHT)
+
+        self.statusbar_lbl = Label(self.statusbar)
+        self.statusbar_lbl.config(text='line:', fg='#ffffff', bg='#222222',
+                                  activeforeground='#ffffff',
+                                  activebackground='#222222', bd=0,
+                                  font=('Sans', '11', 'italic'), padx=0)
+        self.statusbar_lbl.pack(side=RIGHT)
+
         # Event bindings for the keyboard shortcuts
         self.bind_all('<Control-n>', self.create_new_doc)
         self.bind_all('<Control-o>', self.open_file)
@@ -245,6 +266,24 @@ class Application(Frame):
         self.bind_all('<Control-q>', self.quit_from_app)
         self.bind_all('<Control-a>', self.select_all)
 
+    def save_btn_handler(self, event):
+        try:
+            textwidget = self.focus_lastfor()
+            current_index = self.notebook.index('current')
+            if textwidget.edit_modified():
+                self.save_btn.config(state=NORMAL)
+                # Add asterisk to the header of the tab
+                self.notebook.tab(current_index,
+                                  text='*' + self.filenames[current_index])
+            else:
+                self.save_btn.config(state=DISABLED)
+                # If there is asterisk at the header of the tab,
+                # remove it
+                self.notebook.tab(current_index,
+                                  text=self.filenames[current_index])
+        except TclError:
+            pass
+
     def create_new_doc(self, *args):
         # args is the '<Control-n>' probable event
         self.filenames.append('Untitled')
@@ -253,7 +292,7 @@ class Application(Frame):
     def open_file(self, *args):
         # If there is the '<Control-o>' event
         if args:
-            textwidget = self.notebook.focus_get()
+            textwidget = self.focus_lastfor()
             textwidget.edit_modified(arg=False)
         filepath = askopenfilename(filetypes=(('All files', '*'), ))
         if filepath:
@@ -262,17 +301,18 @@ class Application(Frame):
             try:
                 with open(filepath) as file:
                     if self.notebook.index('end') > 0:
-                        textwidget = self.notebook.focus_get()
+                        textwidget = self.focus_lastfor()
                         modified = textwidget.edit_modified()
                         current_index = self.notebook.index('current')
-                        self.filepaths[current_index] = filepath
                         if (self.filenames[current_index] == 'Untitled' and
                                 not modified):
+                            self.filepaths[current_index] = filepath
                             self.filenames[current_index] = filename
                             textwidget.insert(1.0, file.read())
                             textwidget.edit_modified(arg=False)
                             self.notebook.tab('current', text=filename)
                         else:
+                            self.filepaths[current_index + 1] = filepath
                             self.filenames.append(filename)
                             tab = self.TextFrameTab(self)
                             tab.text.insert(1.0, file.read())
@@ -296,12 +336,13 @@ class Application(Frame):
         def close(obj):
             try:
                 current_index = self.notebook.index('current')
-                obj.notebook.forget(current_index)
                 del obj.filenames[current_index]
                 del obj.textwidgets[current_index]
-
                 if current_index in obj.filepaths:
                     del obj.filepaths[current_index]
+
+                obj.notebook.forget(current_index)
+
             except TclError:
                 pass
 
@@ -327,7 +368,7 @@ class Application(Frame):
         if self.notebook.index('end') > 0:
             current_index = self.notebook.index('current')
             if current_index in self.filepaths:
-                textwidget = self.focus_get()
+                textwidget = self.focus_lastfor()
                 text = textwidget.get(1.0, END)
                 with open(self.filepaths[current_index], 'w') as file:
                     file.write(text)
@@ -347,7 +388,7 @@ class Application(Frame):
                 self.filepaths[current_index] = filepath
                 self.notebook.tab('current', text=filename)
                 self.filenames[current_index] = filename
-                textwidget = self.focus_get()
+                textwidget = self.focus_lastfor()
                 text = textwidget.get(1.0, END)
                 with open(filepath, 'w') as file:
                     file.write(text)
