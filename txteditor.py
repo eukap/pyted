@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter.messagebox import *
 from tkinter.ttk import Notebook, Style
 from pathlib import Path
+import sys
 import webbrowser
 
 
@@ -265,6 +266,8 @@ class Application(Frame):
         self.bind_all('<Control-Shift-S>', self.save_as_file)
         self.bind_all('<Control-q>', self.quit_from_app)
         self.bind_all('<Control-a>', self.select_all)
+        if sys.platform.startswith('win32'):
+            self.bind_all('<Control-Shift-Z>', self.redo)
 
     def save_btn_handler(self, event):
         try:
@@ -395,7 +398,7 @@ class Application(Frame):
                 self.file_menu.entryconfigure(4, state=DISABLED)
                 textwidget.edit_modified(arg=False)
 
-    def undo(self, *args):
+    def undo(self):
         try:
             textwidget = self.focus_lastfor()
             textwidget.edit_undo()
@@ -403,6 +406,7 @@ class Application(Frame):
             pass
 
     def redo(self, *args):
+        # args is the '<Control-Shift-Z>' probable event for Windows
         try:
             textwidget = self.focus_lastfor()
             textwidget.edit_redo()
