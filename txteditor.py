@@ -35,15 +35,29 @@ class Application(Frame):
             self.filenames = obj.filenames
             self.save_btn = obj.save_btn
 
+            self.statusbar_line_lbl = obj.statusbar_line_lbl
+            self.statusbar_col_lbl = obj.statusbar_col_lbl
+
             # Disable 'Save' menu item
             self.file_menu.entryconfigure(4, state=DISABLED)
 
             self.text.bind('<<StateChecking>>', self.check_state)
+            # self.text.bind('<<CursorChecking>>', self.check_cursor)
 
         def check_state(self, event):
-            modified = self.text.edit_modified()
+            line_number = self.text.index(INSERT).split('.')[0]
+            # Display the line number of the current cursor position
+            # on the status bar
+            self.statusbar_line_lbl.config(text='line: ' + line_number)
+
+            col_number = str(int(self.text.index(INSERT).split('.')[1]) + 1)
+            # Display the column number of the current cursor position
+            # on the status bar
+            self.statusbar_col_lbl.config(text='column: ' + col_number)
+
             try:
                 current_index = self.notebook.index('current')
+                modified = self.text.edit_modified()
                 if modified:
                     # Enable 'Save' menu item
                     self.file_menu.entryconfigure(4, state=NORMAL)
@@ -238,21 +252,27 @@ class Application(Frame):
                              padx=4, pady=2, command=self.quit_from_app)
         self.quit_btn.pack(side=RIGHT)
 
-        self.TextFrameTab(self)
+        self.statusbar_col_lbl = Label(self.statusbar)
+        self.statusbar_col_lbl.config(text='column: 1', fg='#ffffff',
+                                      bg='#222222', activeforeground='#ffffff',
+                                      activebackground='#222222', bd=0,
+                                      font=('Sans', '11', 'italic'), padx=40)
+        self.statusbar_col_lbl.pack(side=RIGHT)
 
-        self.statusbar_lbl = Label(self.statusbar)
-        self.statusbar_lbl.config(text='column:', fg='#ffffff', bg='#222222',
-                                  activeforeground='#ffffff',
-                                  activebackground='#222222', bd=0,
-                                  font=('Sans', '11', 'italic'), padx=40)
-        self.statusbar_lbl.pack(side=RIGHT)
+        self.statusbar_line_lbl = Label(self.statusbar)
+        self.statusbar_line_lbl.config(text='line: 1', fg='#ffffff',
+                                       bg='#222222', bd=0, padx=0,
+                                       activeforeground='#ffffff',
+                                       activebackground='#222222',
+                                       font=('Sans', '11', 'italic'))
+        self.statusbar_line_lbl.pack(side=RIGHT)
 
-        self.statusbar_lbl = Label(self.statusbar)
-        self.statusbar_lbl.config(text='line:', fg='#ffffff', bg='#222222',
-                                  activeforeground='#ffffff',
-                                  activebackground='#222222', bd=0,
-                                  font=('Sans', '11', 'italic'), padx=0)
-        self.statusbar_lbl.pack(side=RIGHT)
+        self.tab = self.TextFrameTab(self)
+
+        # Create the '<<StateChecking>>' virtual event
+        self.event_add('<<StateChecking>>', '<Any-KeyPress>',
+                       '<Any-KeyRelease>', '<Any-ButtonRelease>',
+                       '<FocusIn>', '<FocusOut>')
 
         # Create event bindings for keyboard shortcuts
         self.bind_all('<Control-n>', self.create_new_doc)
@@ -264,11 +284,6 @@ class Application(Frame):
         self.bind_all('<Control-a>', self.select_all)
         if sys.platform.startswith('win32'):
             self.bind_all('<Control-Shift-Z>', self.redo)
-
-        # Create the '<<StateChecking>>' virtual event
-        self.event_add('<<StateChecking>>', '<Any-KeyPress>',
-                       '<Any-KeyRelease>', '<Any-ButtonRelease>',
-                       '<FocusIn>', '<FocusOut>')
 
     def save_btn_handler(self, event):
         try:
@@ -289,7 +304,7 @@ class Application(Frame):
             pass
 
     def create_new_doc(self, *event):
-        # event is the '<Control-n>' probable event
+        # '*event' is the '<Control-n>' probable event
         self.filenames.append('Untitled')
         self.TextFrameTab(self)
 
@@ -336,7 +351,7 @@ class Application(Frame):
                 self.create_new_doc()
 
     def close_tab(self, *event):
-        # event is the '<Control-w>' probable event
+        # '*event' is the '<Control-w>' probable event
         def close(obj):
             try:
                 current_index = self.notebook.index('current')
@@ -368,7 +383,7 @@ class Application(Frame):
                 close(self)
 
     def save_file(self, *event):
-        # event is the '<Control-s>' probable event
+        # '*event' is the '<Control-s>' probable event
         if self.notebook.index('end') > 0:
             current_index = self.notebook.index('current')
             if current_index in self.filepaths:
@@ -382,7 +397,7 @@ class Application(Frame):
                 self.save_as_file()
 
     def save_as_file(self, *event):
-        # event is the '<Control-Shift-S>' probable event
+        # '*event' is the '<Control-Shift-S>' probable event
         if self.notebook.index('end') > 0:
             filepath = asksaveasfilename()
             if filepath:
@@ -407,7 +422,7 @@ class Application(Frame):
             pass
 
     def redo(self, *event):
-        # event is the '<Control-Shift-Z>' probable event for Windows
+        # '*event' is the '<Control-Shift-Z>' probable event for Windows
         try:
             textwidget = self.focus_lastfor()
             textwidget.edit_redo()
@@ -449,7 +464,7 @@ class Application(Frame):
             pass
 
     def select_all(self, *event):
-        # event is the '<Control-a>' probable event
+        # '*event' is the '<Control-a>' probable event
         textwidget = self.focus_lastfor()
         textwidget.tag_add(SEL, 1.0, END)
 
@@ -521,7 +536,7 @@ class Application(Frame):
         btn.pack(side=TOP)
 
     def quit_from_app(self, *event):
-        # event is the '<Control-q>' probable event
+        # '*event' is the '<Control-q>' probable event
         modified = False
         for widget in self.textwidgets:
             if widget.edit_modified():
