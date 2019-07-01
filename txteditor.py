@@ -48,12 +48,12 @@ class Application(Frame):
             line_number = self.text.index(INSERT).split('.')[0]
             # Display the line number of the current cursor position
             # on the status bar
-            self.statusbar_line_lbl.config(text='line: ' + line_number)
+            self.statusbar_line_lbl.config(text='ln: ' + line_number)
 
             col_number = str(int(self.text.index(INSERT).split('.')[1]) + 1)
             # Display the column number of the current cursor position
             # on the status bar
-            self.statusbar_col_lbl.config(text='column: ' + col_number)
+            self.statusbar_col_lbl.config(text='col: ' + col_number)
 
             try:
                 current_index = self.notebook.index('current')
@@ -94,7 +94,7 @@ class Application(Frame):
         self.toolbar.pack(side=TOP, fill=X)
 
         self.statusbar = Frame(self)
-        self.statusbar.config(bg='#222222', bd=0, relief=FLAT, padx=20)
+        self.statusbar.config(bg='#222222', bd=0, relief=FLAT, padx=10)
         self.statusbar.pack(side=BOTTOM, fill=X)
 
         self.style = Style()
@@ -253,15 +253,15 @@ class Application(Frame):
         self.quit_btn.pack(side=RIGHT)
 
         self.statusbar_col_lbl = Label(self.statusbar)
-        self.statusbar_col_lbl.config(text='column: 1', fg='#ffffff',
+        self.statusbar_col_lbl.config(text='col: 1', fg='#ffffff',
                                       bg='#222222', activeforeground='#ffffff',
                                       activebackground='#222222', bd=0,
-                                      font=('Sans', '11', 'italic'), padx=40)
+                                      font=('Sans', '11', 'italic'), padx=10)
         self.statusbar_col_lbl.pack(side=RIGHT)
 
         self.statusbar_line_lbl = Label(self.statusbar)
-        self.statusbar_line_lbl.config(text='line: 1', fg='#ffffff',
-                                       bg='#222222', bd=0, padx=0,
+        self.statusbar_line_lbl.config(text='ln: 1', fg='#ffffff',
+                                       bg='#222222', bd=0, padx=10,
                                        activeforeground='#ffffff',
                                        activebackground='#222222',
                                        font=('Sans', '11', 'italic'))
@@ -557,6 +557,7 @@ def main():
     root = Tk()
     root.title('PyTed')
     root.geometry('650x500')
+    root.minsize(400, 150)
     frame = Application(root)
     frame.pack(side=TOP, expand=YES, fill=BOTH)
     root.protocol('WM_DELETE_WINDOW', frame.quit_from_app)
