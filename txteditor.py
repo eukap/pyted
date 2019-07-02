@@ -4,6 +4,7 @@ from tkinter.messagebox import *
 from tkinter.ttk import Notebook, Style
 from pathlib import Path
 import sys
+import threading
 import webbrowser
 
 
@@ -303,6 +304,20 @@ class Application(Frame):
         except TclError:
             pass
 
+    def show_progress(self, proc, fpath):
+        """
+        Shows a message on the status bar about saving or downloading
+        process
+        """
+        label = Label(self.statusbar)
+        msg = "{} {}... ".format(proc, fpath)
+        label.config(text=msg, fg='#ffffff', bg='#222222', bd=0,
+                     font=('Sans', '9', 'italic'))
+        label.pack(side=LEFT)
+
+        timer = threading.Timer(3.0, label.destroy)
+        timer.start()
+
     def create_new_doc(self, *event):
         # '*event' is the '<Control-n>' probable event
         self.filenames.append('Untitled')
@@ -349,6 +364,9 @@ class Application(Frame):
                 showerror(message=msg)
                 self.close_tab()
                 self.create_new_doc()
+            thread = threading.Thread(target=self.show_progress,
+                                      args=('Downloading', filepath))
+            thread.start()
 
     def close_tab(self, *event):
         # '*event' is the '<Control-w>' probable event
@@ -359,9 +377,7 @@ class Application(Frame):
                 del obj.textwidgets[current_index]
                 if current_index in obj.filepaths:
                     del obj.filepaths[current_index]
-
                 obj.notebook.forget(current_index)
-
             except TclError:
                 pass
 
@@ -387,12 +403,16 @@ class Application(Frame):
         if self.notebook.index('end') > 0:
             current_index = self.notebook.index('current')
             if current_index in self.filepaths:
+                filepath = self.filepaths[current_index]
                 textwidget = self.focus_lastfor()
                 text = textwidget.get(1.0, END)
-                with open(self.filepaths[current_index], 'w') as file:
+                with open(filepath, 'w') as file:
                     file.write(text)
                 self.file_menu.entryconfigure(4, state=DISABLED)
                 textwidget.edit_modified(arg=False)
+                thread = threading.Thread(target=self.show_progress,
+                                          args=('Saving', filepath))
+                thread.start()
             else:
                 self.save_as_file()
 
@@ -413,6 +433,9 @@ class Application(Frame):
                     file.write(text)
                 self.file_menu.entryconfigure(4, state=DISABLED)
                 textwidget.edit_modified(arg=False)
+                thread = threading.Thread(target=self.show_progress,
+                                          args=('Saving', filepath))
+                thread.start()
 
     def undo(self):
         try:
