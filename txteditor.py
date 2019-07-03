@@ -588,7 +588,7 @@ class Application(Frame):
 
 def main():
     root = Tk()
-    root.title('PyTed')
+    root.title('PyTEd')
     root.geometry('650x500')
     root.minsize(400, 150)
     frame = Application(root)
