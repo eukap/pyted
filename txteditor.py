@@ -16,7 +16,8 @@ class Application(Frame):
 
             self.text = Text(self.text_frm)
             self.text.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD,
-                             undo=True, maxundo=50, autoseparators=True)
+                             undo=True, maxundo=100, autoseparators=True,
+                             selectbackground='#bbbbcf')
             self.text.focus()
             self.yscroll = Scrollbar(self.text_frm, orient=VERTICAL)
             self.yscroll.config(cursor='arrow', command=self.text.yview,
@@ -43,7 +44,15 @@ class Application(Frame):
             self.file_menu.entryconfigure(4, state=DISABLED)
 
             self.text.bind('<<StateChecking>>', self.check_state)
-            # self.text.bind('<<CursorChecking>>', self.check_cursor)
+            self.text.bind('<<StateChecking>>', self.mark_line, add='+')
+
+        def mark_line(self, event):
+            if 'currline' in self.text.tag_names():
+                self.text.tag_delete('currline')
+            self.text.tag_add('currline', 'insert linestart',
+                              'insert linestart + 1 lines')
+            self.text.tag_config('currline', background='#dadada')
+            self.text.tag_lower('currline')
 
         def check_state(self, event):
             line_number = self.text.index(INSERT).split('.')[0]
@@ -182,7 +191,7 @@ class Application(Frame):
         self.new_btn = Button(self.file_tool_frm)
         self.new_btn.config(text='\u2795', font=('Sans', '12'),
                             fg='#eeeeee', bg='#333333', bd=0,
-                            relief=FLAT, activebackground='#555555',
+                            activebackground='#555555',
                             activeforeground='#ffffff', padx=4, pady=0,
                             command=self.create_new_doc)
         self.new_btn.grid(row=0, column=0)
@@ -193,7 +202,7 @@ class Application(Frame):
         self.open_btn = Button(self.file_tool_frm)
         self.open_btn.config(text='\u21e9', font=('Sans', '12', 'bold'),
                              fg='#eeeeee', bg='#333333', bd=0,
-                             relief=FLAT, activebackground='#555555',
+                             activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
                              command=self.open_file)
         self.open_btn.grid(row=0, column=1, padx=20)
@@ -204,7 +213,7 @@ class Application(Frame):
         self.save_btn = Button(self.file_tool_frm)
         self.save_btn.config(text='\u21e7', font=('Sans', '12', 'bold'),
                              fg='#eeeeee', bg='#333333', bd=0,
-                             relief=FLAT, activebackground='#555555',
+                             activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
                              state=DISABLED, command=self.save_file)
         self.save_btn.grid(row=0, column=2, padx=0)
@@ -216,7 +225,7 @@ class Application(Frame):
         self.close_btn = Button(self.file_tool_frm)
         self.close_btn.config(text='\u2717', font=('Sans', '12', 'bold'),
                               fg='#eeeeee', bg='#333333', bd=0,
-                              relief=FLAT, activebackground='#555555',
+                              activebackground='#555555',
                               activeforeground='#ffffff', padx=4, pady=0,
                               command=self.close_tab)
         self.close_btn.grid(row=0, column=3, padx=20)
@@ -227,7 +236,7 @@ class Application(Frame):
         self.undo_btn = Button(self.edit_tool_frm)
         self.undo_btn.config(text='\u21b6', font=('Sans', '12'),
                              fg='#eeeeee', bg='#333333', bd=0,
-                             relief=FLAT, activebackground='#555555',
+                             activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
                              command=self.undo)
         self.undo_btn.grid(row=0, column=0)
@@ -238,7 +247,7 @@ class Application(Frame):
         self.redo_btn = Button(self.edit_tool_frm)
         self.redo_btn.config(text='\u21b7', font=('Sans', '12'),
                              fg='#eeeeee', bg='#333333', bd=0,
-                             relief=FLAT, activebackground='#555555',
+                             activebackground='#555555',
                              activeforeground='#ffffff', padx=4, pady=0,
                              command=self.redo)
         self.redo_btn.grid(row=0, column=1, padx=20)
@@ -249,8 +258,8 @@ class Application(Frame):
         self.quit_btn = Button(self.toolbar)
         self.quit_btn.config(text='Quit', font=('Sans', '10'), fg='#eeeeee',
                              bg='#333333', activebackground='#647899',
-                             activeforeground='#ffffff', bd=0,  relief=GROOVE,
-                             padx=4, pady=2, command=self.quit_from_app)
+                             activeforeground='#ffffff', bd=0, padx=4, pady=2,
+                             command=self.quit_from_app)
         self.quit_btn.pack(side=RIGHT)
 
         self.statusbar_col_lbl = Label(self.statusbar)
@@ -292,12 +301,12 @@ class Application(Frame):
             current_index = self.notebook.index('current')
             if textwidget.edit_modified():
                 self.save_btn.config(state=NORMAL)
-                # Add asterisk to the header of the tab
+                # Add an asterisk to the header of the tab
                 self.notebook.tab(current_index,
                                   text='*' + self.filenames[current_index])
             else:
                 self.save_btn.config(state=DISABLED)
-                # If there is asterisk at the header of the tab,
+                # If there is an asterisk at the header of the tab,
                 # remove it
                 self.notebook.tab(current_index,
                                   text=self.filenames[current_index])
@@ -318,12 +327,12 @@ class Application(Frame):
         timer = threading.Timer(3.0, label.destroy)
         timer.start()
 
-    def create_new_doc(self, *event):
-        # '*event' is the '<Control-n>' probable event
+    def create_new_doc(self, event=None):
+        # 'event' is the '<Control-n>' probable event
         self.filenames.append('Untitled')
         self.TextFrameTab(self)
 
-    def open_file(self, *event):
+    def open_file(self, event=None):
         # If there is the '<Control-o>' event
         if event:
             textwidget = self.focus_lastfor()
@@ -368,8 +377,8 @@ class Application(Frame):
                                       args=('Downloading', filepath))
             thread.start()
 
-    def close_tab(self, *event):
-        # '*event' is the '<Control-w>' probable event
+    def close_tab(self, event=None):
+        # 'event' is the '<Control-w>' probable event
         def close(obj):
             try:
                 current_index = self.notebook.index('current')
@@ -398,8 +407,8 @@ class Application(Frame):
             else:
                 close(self)
 
-    def save_file(self, *event):
-        # '*event' is the '<Control-s>' probable event
+    def save_file(self, event=None):
+        # 'event' is the '<Control-s>' probable event
         if self.notebook.index('end') > 0:
             current_index = self.notebook.index('current')
             if current_index in self.filepaths:
@@ -416,8 +425,8 @@ class Application(Frame):
             else:
                 self.save_as_file()
 
-    def save_as_file(self, *event):
-        # '*event' is the '<Control-Shift-S>' probable event
+    def save_as_file(self, event=None):
+        # 'event' is the '<Control-Shift-S>' probable event
         if self.notebook.index('end') > 0:
             filepath = asksaveasfilename()
             if filepath:
@@ -444,8 +453,8 @@ class Application(Frame):
         except TclError:
             pass
 
-    def redo(self, *event):
-        # '*event' is the '<Control-Shift-Z>' probable event for Windows
+    def redo(self, event=None):
+        # 'event' is the '<Control-Shift-Z>' probable event for Windows
         try:
             textwidget = self.focus_lastfor()
             textwidget.edit_redo()
@@ -486,8 +495,8 @@ class Application(Frame):
         except TclError:
             pass
 
-    def select_all(self, *event):
-        # '*event' is the '<Control-a>' probable event
+    def select_all(self, event=None):
+        # 'event' is the '<Control-a>' probable event
         textwidget = self.focus_lastfor()
         textwidget.tag_add(SEL, 1.0, END)
 
@@ -558,8 +567,8 @@ class Application(Frame):
                    font=('Sans', '10', 'normal'), command=window.destroy)
         btn.pack(side=TOP)
 
-    def quit_from_app(self, *event):
-        # '*event' is the '<Control-q>' probable event
+    def quit_from_app(self, event=None):
+        # 'event' is the '<Control-q>' probable event
         modified = False
         for widget in self.textwidgets:
             if widget.edit_modified():
