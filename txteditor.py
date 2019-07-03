@@ -15,7 +15,7 @@ class Application(Frame):
             self.text_frm.pack(side=TOP, expand=YES, fill=BOTH)
 
             self.text = Text(self.text_frm)
-            self.text.config(fg='#111111', bg='#eeeeee', bd=0, wrap=WORD,
+            self.text.config(fg='#111111', bg='#f2f2f2', bd=0, wrap=WORD,
                              undo=True, maxundo=100, autoseparators=True,
                              selectbackground='#bbbbcf')
             self.text.focus()
