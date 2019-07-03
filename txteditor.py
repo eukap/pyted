@@ -51,6 +51,7 @@ class Application(Frame):
                 self.text.tag_delete('currline')
             self.text.tag_add('currline', 'insert linestart',
                               'insert linestart + 1 lines')
+            # Highlight the current line
             self.text.tag_config('currline', background='#dadada')
             self.text.tag_lower('currline')
 
