@@ -7,6 +7,8 @@ It supports all of the commonly used editing operations.
 * tkinter module
 
 ## Screenshots
-![Image alt](https://github.com/eukap/pyted/raw/master/screenshots/mainwindow.png)
-![Image alt](https://github.com/eukap/pyted/raw/master/screenshots/filemenu.png)
+![Image alt](https://github.com/eukap/pyted/raw/master/screenshots/mainwindow.png)  
+
+![Image alt](https://github.com/eukap/pyted/raw/master/screenshots/filemenu.png)  
+
 ![Image alt](https://github.com/eukap/pyted/raw/master/screenshots/toolbar.png)
